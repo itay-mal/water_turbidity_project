@@ -2,7 +2,7 @@
     <default name="spp" value="128"/>
     <default name="res" value="1024"/>
     <default name="max_depth" value="-1"/>
-    <default name="integrator" value="volpath"/>
+    <default name="integrator" value="volpathmis"/>
 
     <!--Integrator -->
 
@@ -54,6 +54,11 @@
 
     <!-- Light -->
 
+<!--    <emitter type="directional">-->
+<!--        <vector name="direction" value="0,-1,0"/>-->
+<!--        <rgb name="irradiance" value="3"/>-->
+<!--    </emitter>-->
+
     <shape type="sphere" id="light">
         <transform name="to_world">
             <scale value="3"/>
@@ -75,7 +80,7 @@
 	</medium>
 
     <medium type="homogeneous" id="underwater">
-		<rgb name="sigma_t" value="0.8, 0.3, 0.3"/>
+		<rgb name="sigma_t" value="0.133, 0.1, 0.1"/>
 		<phase type="hg">
 			<float name="g" value="0.9"/>
 		</phase>
@@ -86,11 +91,11 @@
     <shape type="cube" id="aquarium">
 		<transform name="to_world">
 			<translate x="0" y="0" z="0"/>
-			<scale x="100" y="100" z="100"/>
+			<scale x="11" y="5" z="11"/>
 		</transform>
 		<ref name="interior" id="underwater"/>
-<!--		<ref name="exterior" id="free_space"/>-->
-		<bsdf type="dielectric">
+		<ref name="exterior" id="free_space"/>
+		<bsdf type="null">
             <string name="int_ior" value="water"/>
 			<string name="ext_ior" value="air"/>
 		</bsdf>

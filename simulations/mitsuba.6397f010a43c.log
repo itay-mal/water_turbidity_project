@@ -1,0 +1,59 @@
+2023-03-14 21:55:06 INFO  main [mitsuba.cpp:256] Mitsuba version 0.5.0 (Linux, 64 bit), Copyright (c) 2014 Wenzel Jakob
+2023-03-14 21:55:06 INFO  main [mitsuba.cpp:356] Parsing scene description from "underwater_dist_05_turbdity_values.xml" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/volpath.so" ..
+2023-03-14 21:55:06 WARN  main [scenehandler.cpp:795] In file "/home1/itay.mal@staff.technion.ac.il/water_turbidity_project/simulations/underwater_dist_05_turbdity_values.xml" (near line 16): Unqueried attribute "directSamples" in element "integrator"
+2023-03-14 21:55:06 WARN  main [scenehandler.cpp:795] In file "/home1/itay.mal@staff.technion.ac.il/water_turbidity_project/simulations/underwater_dist_05_turbdity_values.xml" (near line 16): Unqueried attribute "twoStage" in element "integrator"
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/hg.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/homogeneous.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/independent.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/tent.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/ldrfilm.so" ..
+2023-03-14 21:55:06 WARN  main [scenehandler.cpp:795] In file "/home1/itay.mal@staff.technion.ac.il/water_turbidity_project/simulations/underwater_dist_05_turbdity_values.xml" (near line 64): Unqueried attribute "componentFormat" in element "film"
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/perspective.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/diffuse.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/area.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/sphere.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/null.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/cube.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/dielectric.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/rectangle.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/roughplastic.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/checkerboard.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/twosided.so" ..
+2023-03-14 21:55:06 INFO  main [PluginManager] Loading plugin "plugins/disk.so" ..
+2023-03-14 21:55:06 INFO  ren0 [KDTreeBase] Constructing a SAH kd-tree (17 primitives) ..
+2023-03-14 21:55:06 INFO  ren0 [KDTreeBase] Finished -- took 0 ms.
+2023-03-14 21:55:06 INFO  ren0 [SamplingIntegrator] Starting render job (750x500, 1024 samples, 24 cores, SSE2 enabled) ..
+2023-03-14 21:55:51 INFO  main [LDRFilm] Writing image to "./variable_dists_and_sigma_s/18.png" ..
+2023-03-14 21:56:21 INFO  ren0 [RenderJob] Render time: 1.2376m
+2023-03-14 21:56:21 INFO  ren0 [LDRFilm] Writing image to "./variable_dists_and_sigma_s/18.png" ..
+2023-03-14 21:56:21 INFO  main [statistics.cpp:142] Statistics:
+------------------------------------------------------------
+ * Loaded plugins :
+    -  plugins/area.so [Area light]
+    -  plugins/checkerboard.so [Checkerboard texture]
+    -  plugins/cube.so [Cube intersection primitive]
+    -  plugins/dielectric.so [Smooth dielectric BSDF]
+    -  plugins/diffuse.so [Smooth diffuse BRDF]
+    -  plugins/disk.so [Disk intersection primitive]
+    -  plugins/hg.so [Henyey-Greenstein phase function]
+    -  plugins/homogeneous.so [Homogeneous medium]
+    -  plugins/independent.so [Independent sampler]
+    -  plugins/ldrfilm.so [Low dynamic range film]
+    -  plugins/null.so [Null BSDF]
+    -  plugins/perspective.so [Perspective camera]
+    -  plugins/rectangle.so [Rectangle intersection primitive]
+    -  plugins/roughplastic.so [Rough plastic BRDF]
+    -  plugins/sphere.so [Sphere intersection primitive]
+    -  plugins/tent.so [Tent filter]
+    -  plugins/twosided.so [Two-sided BRDF adapter]
+    -  plugins/volpath.so [Volumetric path tracer]
+
+  * General :
+    -  Detected medium inconsistencies : 387
+    -  Normal rays traced : 3.097 G
+    -  Shadow rays traced : 1.032 G
+
+  * Volumetric path tracer :
+    -  Average path length : 5.42 (2.08 G / 384.00 M)
+------------------------------------------------------------

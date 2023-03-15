@@ -1,0 +1,141 @@
+<scene version="0.5.0">
+    <default name="spp" value="128"/>
+    <default name="res" value="1024"/>
+    <default name="max_depth" value="-1"/>
+    <default name="integrator" value="volpathmis"/>
+
+    <!--Integrator -->
+
+    <integrator type='$integrator'>
+        <integer name="max_depth" value="$max_depth"/>
+    </integrator>
+
+    <!-- Sensor -->
+
+    <sensor type="perspective" id="sensor">
+        <string name="fov_axis" value="smaller"/>
+        <float name="near_clip" value="0.001"/>
+        <float name="far_clip" value="100.0"/>
+        <float name="focus_distance" value="1000"/>
+        <float name="fov" value="39.3077"/>
+        <transform name="to_world">
+            <lookat origin="0,  0,  10"
+                    target="0,  0,  0"
+                    up    ="0,  1,  0"/>
+        </transform>
+        <sampler type="independent">
+            <integer name="sample_count" value="$spp"/>
+        </sampler>
+        <film type="hdrfilm">
+            <integer name="width"  value="$res"/>
+            <integer name="height" value="$res"/>
+            <rfilter type="tent"/>
+            <string name="pixel_format" value="rgb"/>
+            <string name="component_format" value="float32"/>
+        </film>
+    </sensor>
+
+    <!-- BSDFs -->
+
+    <bsdf type="diffuse" id="ball_material">
+        <texture name="reflectance" type="checkerboard">
+            <rgb name="color0" value="0.1, 0.1, 0.1"/>
+            <rgb name="color1" value="0.5, 0.5, 0.5"/>
+            <transform name="to_uv">
+                <scale x="10" y="10"/>
+            </transform>
+        </texture>
+    </bsdf>
+
+
+    <bsdf type="diffuse" id="white">
+        <rgb name="reflectance" value="0.885809, 0.698859, 0.666422"/>
+    </bsdf>
+
+    <!-- Light -->
+
+<!--    <emitter type="directional">-->
+<!--        <vector name="direction" value="0,-1,0"/>-->
+<!--        <rgb name="irradiance" value="3"/>-->
+<!--    </emitter>-->
+
+    <shape type="sphere" id="light">
+        <transform name="to_world">
+            <scale value="3"/>
+            <translate x="0" y="50" z="0"/>
+        </transform>
+        <ref id="white"/>
+        <emitter type="area">
+            <rgb name="radiance" value="180.387, 130.9873, 60.75357"/>
+        </emitter>
+    </shape>
+
+    <!-- Volumes -->
+
+    <medium type="homogeneous" id="free_space">
+		<float name="sigma_t" value="0"/>
+		<phase type="hg">
+			<float name="g" value="0.9"/>
+		</phase>
+	</medium>
+
+    <medium type="homogeneous" id="underwater">
+		<rgb name="sigma_t" value="0.133, 0.1, 0.1"/>
+		<phase type="hg">
+			<float name="g" value="0.9"/>
+		</phase>
+	</medium>
+
+    <!-- Shapes -->
+
+    <shape type="cube" id="aquarium">
+		<transform name="to_world">
+			<translate x="0" y="0" z="0"/>
+			<scale x="20" y="20" z="20"/>
+		</transform>
+		<ref name="interior" id="underwater"/>
+		<ref name="exterior" id="free_space"/>
+		<bsdf type="dielectric">
+            <string name="int_ior" value="water"/>
+			<string name="ext_ior" value="air"/>
+		</bsdf>
+	</shape>
+
+    <shape type="obj" id="floor">
+        <string name="filename" value="meshes/cbox_floor.obj"/>
+        <transform name="to_world">
+            <scale value="10,1,10"/>
+        </transform>
+        <bsdf type="roughplastic">
+            <rgb name="diffuse_reflectance" value="0.4, 0.3, 0.2"/>
+            <float name="alpha" value="0.3"/>
+        </bsdf>
+    </shape>
+
+    <shape type="cube" id="near">
+        <transform name="to_world">
+            <scale value="0.5"/>
+            <translate x="1" y="-0.5" z="2"/>
+        </transform>
+        <ref id="ball_material"/>
+    </shape>
+
+
+    <shape type="sphere" id="mid">
+        <transform name="to_world">
+            <scale value="0.5"/>
+            <translate x="0" y="-0.5" z="-3"/>
+        </transform>
+        <ref id="ball_material"/>
+    </shape>
+
+    <shape type="cube" id="far">
+        <transform name="to_world">
+            <scale value="0.5"/>
+            <lookat origin="-2,  -0.2,  -8"
+                    target="-202, 200.2, 0"
+                    up    ="0,  1,  1"/>
+        </transform>
+        <ref id="ball_material"/>
+    </shape>
+</scene>
