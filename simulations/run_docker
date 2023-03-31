@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+current_dir=`pwd` 
+echo 'running docker'
+docker run -ti -v `pwd`:`pwd` ninjaben/mitsuba-rgb

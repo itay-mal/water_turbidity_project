@@ -12,7 +12,7 @@ num_targets = 2
 
 
 def main():
-    img = cv2.imread("./statistic_test/1.png")
+    img = cv2.imread("./dataset_for_segmentation/17_gt.png")
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     display_image(img_rgb, 'Original Image')
     pre_proc_img = pre_processing(img, True, gamma=1.5)
