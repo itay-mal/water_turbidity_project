@@ -12,12 +12,14 @@ target_r = 0.15
 sensor_size = 24e-3
 num_targets = 2
 # img_path = '/home/itay.mal/Downloads/football1.jpeg'
-img_path = './variable_dists_and_sigma_s/5.png'
-
+# img_path = './variable_dists_and_sigma_s/5.png'
+img_path = './texture_test.png'
 
 
 def main():
-    model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_mobilenet_v3_large', pretrained=True)
+    model = torch.hub.load('pytorch/vision:v0.10.0',
+                           'deeplabv3_mobilenet_v3_large',
+                           weights='DeepLabV3_MobileNet_V3_Large_Weights.DEFAULT')
     model.eval()
     input_image = Image.open(img_path)
     input_image = input_image.convert("RGB")
@@ -49,6 +51,7 @@ def main():
     plt.figure()
     plt.imshow(input_image)
     plt.show()
+
 
 if __name__ == "__main__":
     main()
