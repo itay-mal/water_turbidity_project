@@ -14,7 +14,7 @@ def main():
     im = im.astype(np.float64)
     im *= n_well  # [electrons]
     im /= quantum_eff  # [photons]
-    im += np.sqrt(im)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add photon noise
+    im += im + np.sqrt(im)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add photon noise
     im *= quantum_eff  # [electrons]
     im += np.sqrt(sigma_n)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add electronic noise
     im /= n_well  # [R,G,B]
