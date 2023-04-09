@@ -1,7 +1,11 @@
 <scene version="3.0.0">
     <default name="spp" value="128"/>
-    <default name="res" value="1024"/>
+    <default name="res" value="256"/>
     <default name="max_depth" value="-1"/>
+<<<<<<< Updated upstream
+=======
+<!--    <default name="integrator" value="ptracer"/>-->
+>>>>>>> Stashed changes
     <default name="integrator" value="volpathmis"/>
 
     <!--Integrator -->
@@ -23,7 +27,7 @@
                     target="0,  0,  0"
                     up    ="0,  1,  0"/>
         </transform>
-        <sampler type="independent">
+        <sampler type="multijitter">
             <integer name="sample_count" value="$spp"/>
         </sampler>
         <film type="hdrfilm">
@@ -47,13 +51,18 @@
         </texture>
     </bsdf>
 
-
     <bsdf type="diffuse" id="white">
         <rgb name="reflectance" value="0.885809, 0.698859, 0.666422"/>
     </bsdf>
 
+    <bsdf type="dielectric" id="Water" >
+		<float name="int_ior" value="1.8" />
+		<float name="ext_ior" value="1" />
+	</bsdf>
+
     <!-- Light -->
 
+<<<<<<< Updated upstream
 <!--    <emitter type="directional">-->
 <!--        <vector name="direction" value="0,-1,0"/>-->
 <!--        <rgb name="irradiance" value="3"/>-->
@@ -69,6 +78,23 @@
             <rgb name="radiance" value="180.387, 130.9873, 60.75357"/>
         </emitter>
     </shape>
+=======
+    <emitter type="directional">
+        <vector name="direction" value="0, -1, 0"/>
+        <rgb name="irradiance" value="4"/>
+    </emitter>
+
+<!--    <shape type="sphere" id="light">-->
+<!--        <transform name="to_world">-->
+<!--            <scale value="3"/>-->
+<!--            <translate x="0" y="50" z="0"/>-->
+<!--        </transform>-->
+<!--        <ref id="white"/>-->
+<!--        <emitter type="area">-->
+<!--            <rgb name="radiance" value="180.387, 130.9873, 60.75357"/>-->
+<!--        </emitter>-->
+<!--    </shape>-->
+>>>>>>> Stashed changes
 
     <!-- Volumes -->
 
@@ -90,12 +116,25 @@
 
     <shape type="cube" id="aquarium">
 		<transform name="to_world">
+<<<<<<< Updated upstream
 			<translate x="0" y="0" z="0"/>
 			<scale x="11" y="5" z="11"/>
 		</transform>
 		<ref name="interior" id="underwater"/>
 		<ref name="exterior" id="free_space"/>
 		<bsdf type="null">
+=======
+<!--			<translate x="1" y="0.5" z="0"/>-->
+			<scale x="1" y="1" z="1"/>
+            <lookat origin="-1,  0,  0"
+                    target="-1,  100,  0"
+                    up    ="0,  0,  0"/>
+<!--			<scale x="100" y="100" z="100"/>-->
+		</transform>
+		<ref name="interior" id="underwater"/>
+		<ref name="exterior" id="free_space"/>
+		<bsdf type="dielectric">
+>>>>>>> Stashed changes
             <string name="int_ior" value="water"/>
 			<string name="ext_ior" value="air"/>
 		</bsdf>
@@ -117,7 +156,7 @@
             <scale value="0.5"/>
             <translate x="1" y="-0.5" z="2"/>
         </transform>
-        <ref id="ball_material"/>
+        <ref id="Water"/>
     </shape>
 
 
@@ -136,4 +175,46 @@
         </transform>
         <ref id="ball_material"/>
     </shape>
+
+<!--    <shape type="obj" >-->
+<!--		<string name="filename" value="meshes/water_top.obj" />-->
+<!--		<transform name="to_world" >-->
+<!--			<matrix value="1 0 0 0-->
+<!--			               0 1.5 0 -2-->
+<!--			               0 0 1 0-->
+<!--			               0 0 0 1"/>-->
+<!--		</transform>-->
+<!--		<ref id="Water" />-->
+<!--	</shape>-->
+
+    <shape type="obj" >
+		<string name="filename" value="meshes/water_top.obj" />
+		<transform name="to_world" >
+			<matrix value="1 0 0 0 0 1.5 0 0 0 0 1 0 0 0 0 1"/>
+		</transform>
+		<ref id="Water" />
+	</shape>
+	<shape type="obj" >
+		<string name="filename" value="meshes/Mesh000.obj" />
+		<transform name="to_world" >
+			<matrix value="1 0 0 0 0 1.5 0 0 0 0 1 0 0 0 0 1"/>
+		</transform>
+		<boolean name="face_normals" value="true" />
+		<ref id="Water" />
+	</shape>
+
+    <!--  Fog  -->
+
+<!--    <shape type="cube">-->
+<!--		<transform name="to_world">-->
+<!--			<scale value="2.5"/>-->
+<!--		</transform>-->
+<!--        <bsdf type="null" />-->
+<!--		<medium type="homogeneous" name="interior">-->
+<!--            <float name="scale" value="0.5" />-->
+<!--			<rgb name="albedo" value="1, 1, 1" />-->
+<!--			<rgb name="sigma_t" value="0.133, 0.1, 0.1" />-->
+<!--		</medium>-->
+<!--    </shape>-->
+
 </scene>

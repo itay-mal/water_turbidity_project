@@ -25,7 +25,7 @@ def main():
             up=[0, 1, 0]
         )
         params.update()
-        image = mi.render(scene, spp=512)
+        image = mi.render(scene, spp=1024)
         images.append(image)
         print(f'image {i} rendered')
 
