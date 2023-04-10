@@ -9,8 +9,10 @@ FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3
 num_targets = 2
-img_path = "./dataset_for_segmentation/17.png"
+img_path = "./dataset_for_segmentation/225.png"
 THICKNESS = 2
+
+
 
 
 def main():
@@ -58,23 +60,75 @@ def main():
 
         # calculate targets distance and print to console
         if key == ord('c'):
-            # test_img = np.zeros()
-            # t1_dist = calc_distance(img.shape[0], r1)
-            # t2_dist = calc_distance(img.shape[0], r2)
+            test_img = np.zeros(img.shape)
+            t1_dist = calc_distance(img.shape[0], r1)
+            t2_dist = calc_distance(img.shape[0], r2)
             t1_w = []
             t1_b = []
             t2_w = []
             t2_b = []
+
+            def in_target(x, y, r, x_hat_, y_hat_):
+                """check if given pixel (x_hat, y_hat) is inside a target with center coords (x,y) and radius r"""
+                return np.linalg.norm(np.array([x, y]) - np.array([x_hat_, y_hat_])) < r
+
+            def in_black_sections(theta, angle_):
+                """check if the angle is in the correct ranges to be in the black sections of the target"""
+                if 0 < theta <= np.pi/2:
+                    return np.tan(theta) <= np.tan(angle_) or np.tan(angle_) <= np.tan(theta + np.pi / 2)
+                return np.tan(theta) <= np.tan(angle_) <= np.tan(theta + np.pi / 2)
+
+            # collect pixels for targets' sections
             for y_hat, x_hat in product(range(img.shape[0]), range(img.shape[1])):
-                if np.linalg.norm(np.array([x1, y1]) - np.array([x_hat, y_hat])) < r1:
-                    angle = get_angle((x_hat - x1, y_hat - y1))
-                    if (((theta1 <= angle) and (angle <= theta1 + np.pi / 2))
-                            or ((theta1 + np.pi <= angle) and (angle <= theta1 + 3 * np.pi / 2))):
+                if in_target(x1, y1, r1, x_hat, y_hat): # in target 1
+                    angle = get_angle((x_hat - x1, y1 - y_hat))  # flipped on Y axis bc img coord sys is upside down
+                    if in_black_sections(theta1, angle):
                         t1_b.append(img_clean[y_hat, x_hat])
+                        test_img[y_hat, x_hat] = (255, 0, 0)
                     else:
                         t1_w.append(img_clean[y_hat, x_hat])
-            print(len(t1_w))
-            # print(f'target1 distance: {t1_dist}[m] | target2 distance: {t2_dist}[m]')
+                        test_img[y_hat, x_hat] = (0, 255, 0)
+
+                elif in_target(x2, y2, r2, x_hat, y_hat):  # in target 2
+                    angle = get_angle((x_hat - x2, y2 - y_hat))  # flipped on Y axis bc img coord sys is upside down
+                    if in_black_sections(theta2, angle):
+                        t2_b.append(img_clean[y_hat, x_hat])
+                        test_img[y_hat, x_hat] = (255, 255, 0)
+                    else:
+                        t2_w.append(img_clean[y_hat, x_hat])
+                        test_img[y_hat, x_hat] = (0, 255, 255)
+            cv2.namedWindow('TEST IMAGE')
+            cv2.imshow('TEST IMAGE', test_img)
+            print(f'target1 distance: {t1_dist}[m] | target2 distance: {t2_dist}[m]')
+            t1_b = np.array(t1_b)
+            t1_w = np.array(t1_w)
+            t2_b = np.array(t2_b)
+            t2_w = np.array(t2_w)
+            clac_attenuation_coeffs(t1_dist, t1_w, t1_b, t2_dist, t2_w, t2_b)
+
+
+def clac_attenuation_coeffs(t1_dist, t1_w, t1_b, t2_dist, t2_w, t2_b):
+    t1_w_avg = np.average(t1_w, axis=0)
+    t1_b_avg = np.average(t1_b, axis=0)
+    t2_w_avg = np.average(t2_w, axis=0)
+    t2_b_avg = np.average(t2_b, axis=0)
+    att_B_w = - np.log(t1_w_avg[0]/t2_w_avg[0]) / (t1_dist - t2_dist)
+    att_G_w = - np.log(t1_w_avg[1]/t2_w_avg[1]) / (t1_dist - t2_dist)
+    att_R_w = - np.log(t1_w_avg[2]/t2_w_avg[2]) / (t1_dist - t2_dist)
+    att_B_b = - np.log(t1_b_avg[0]/t2_b_avg[0]) / (t1_dist - t2_dist)
+    att_G_b = - np.log(t1_b_avg[1]/t2_b_avg[1]) / (t1_dist - t2_dist)
+    att_R_b = - np.log(t1_b_avg[2]/t2_b_avg[2]) / (t1_dist - t2_dist)
+    print(f'attenuation blue on white: {att_B_w}')
+    print(f'attenuation blue on black: {att_B_b}')
+    print(f'attenuation blue average: {np.average([att_B_w,att_B_b])}')
+    print(f'attenuation green on white: {att_G_w}')
+    print(f'attenuation green on black: {att_G_b}')
+    print(f'attenuation green average: {np.average([att_G_w,att_G_b])}')
+    print(f'attenuation red on white: {att_R_w}')
+    print(f'attenuation red on black: {att_R_b}')
+    print(f'attenuation red average: {np.average([att_R_w,att_R_b])}')
+
+
 
 
 def unit_vector(vector):
@@ -83,20 +137,13 @@ def unit_vector(vector):
 
 
 def get_angle(v1):
-    """ Returns the angle in radians of vector 'v1':
-
-            >>> angle_between((1, 0, 0), (0, 1, 0))
-            1.5707963267948966
-            >>> angle_between((1, 0, 0), (1, 0, 0))
-            0.0
-            >>> angle_between((1, 0, 0), (-1, 0, 0))
-            3.141592653589793
-    """
+    """ Returns the angle in radians of vector 'v1'"""
     v1_u = unit_vector(v1)
-    v2_u = unit_vector((1, 0))
-    angle = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
-    if v1_u[1] < 0:
+    angle = np.arctan(v1_u[1] / v1_u[0])
+    if v1_u[0] < 0:  # 2nd and 3rd quadrants
         angle += np.pi
+    elif v1_u[1] < 0:  # 4th quadrant
+        angle += 2 * np.pi
     return angle
 
 
