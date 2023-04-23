@@ -7,6 +7,7 @@ import os
 images_root = './statistic_test'
 images_target = './statistic_test_noised'
 n_well = 32870  # TODO: replace with correct value
+gamma = n_well/256
 quantum_eff = .7  # TODO: replace with correct value
 sigma_n = 6.2  # TODO: replace with correct value
 show = False
@@ -31,12 +32,14 @@ def addd_noise(image_path):
     im = cv2.imread(image_path)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)  # [R,G,B]
     im = im.astype(np.float64)
-    im *= n_well  # [electrons]
+    im *= gamma  # [electrons]
     im /= quantum_eff  # [photons]
-    im += im + np.sqrt(im)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add photon noise
+    im += np.sqrt(im)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add photon noise
+    # TODO: find picture statistics here, for sanity check
+    # TODO: compare with torch poisson and modified normal noise
     im *= quantum_eff  # [electrons]
-    im += np.sqrt(sigma_n)*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add electronic noise
-    im /= n_well  # [R,G,B]
+    im += sigma_n*np.random.randn(im.shape[0], im.shape[1], im.shape[2])  # add electronic noise
+    im /= gamma  # [R,G,B]
     im = im.astype(np.uint8)
     return im
 

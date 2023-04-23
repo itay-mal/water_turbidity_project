@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-imgs_path = "./statistic_test_noised"
+imgs_path = "./statistic_test"
 
 
 def calc_mean(imgs):

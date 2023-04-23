@@ -9,8 +9,8 @@ FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3
 num_targets = 2
-# img_path = "./dataset_for_segmentation/225.png"
-img_path = "./white_light_test.png"
+img_path = "./dataset_for_segmentation/225.png"
+# img_path = "./white_light_test.png"
 THICKNESS = 2
 
 
