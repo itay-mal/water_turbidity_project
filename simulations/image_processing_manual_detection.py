@@ -9,11 +9,9 @@ FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3
 num_targets = 2
-img_path = "./dataset_for_segmentation/225.png"
+img_path = "./dataset_for_segmentation/87.png"
 # img_path = "./white_light_test.png"
-THICKNESS = 2
-
-
+THICKNESS = 1
 
 
 def main():
@@ -116,18 +114,18 @@ def clac_attenuation_coeffs(t1_dist, t1_w, t1_b, t2_dist, t2_w, t2_b):
     att_B_w = - np.log(t1_w_avg[0]/t2_w_avg[0]) / (t1_dist - t2_dist)
     att_G_w = - np.log(t1_w_avg[1]/t2_w_avg[1]) / (t1_dist - t2_dist)
     att_R_w = - np.log(t1_w_avg[2]/t2_w_avg[2]) / (t1_dist - t2_dist)
-    att_B_b = - np.log(t1_b_avg[0]/t2_b_avg[0]) / (t1_dist - t2_dist)
-    att_G_b = - np.log(t1_b_avg[1]/t2_b_avg[1]) / (t1_dist - t2_dist)
-    att_R_b = - np.log(t1_b_avg[2]/t2_b_avg[2]) / (t1_dist - t2_dist)
+    # att_B_b = - np.log(t1_b_avg[0]/t2_b_avg[0]) / (t1_dist - t2_dist)
+    # att_G_b = - np.log(t1_b_avg[1]/t2_b_avg[1]) / (t1_dist - t2_dist)
+    # att_R_b = - np.log(t1_b_avg[2]/t2_b_avg[2]) / (t1_dist - t2_dist)
     print(f'attenuation blue on white: {att_B_w}')
-    print(f'attenuation blue on black: {att_B_b}')
-    print(f'attenuation blue average: {np.average([att_B_w,att_B_b])}')
+    # print(f'attenuation blue on black: {att_B_b}')
+    # print(f'attenuation blue average: {np.average([att_B_w,att_B_b])}')
     print(f'attenuation green on white: {att_G_w}')
-    print(f'attenuation green on black: {att_G_b}')
-    print(f'attenuation green average: {np.average([att_G_w,att_G_b])}')
+    # print(f'attenuation green on black: {att_G_b}')
+    # print(f'attenuation green average: {np.average([att_G_w,att_G_b])}')
     print(f'attenuation red on white: {att_R_w}')
-    print(f'attenuation red on black: {att_R_b}')
-    print(f'attenuation red average: {np.average([att_R_w,att_R_b])}')
+    # print(f'attenuation red on black: {att_R_b}')
+    # print(f'attenuation red average: {np.average([att_R_w,att_R_b])}')
 
 
 
