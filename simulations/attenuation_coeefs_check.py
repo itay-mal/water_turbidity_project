@@ -51,7 +51,6 @@ def main():
             coeffs[idx].append((sigma_a[0] + sigma_s[0], sigma_a[1] + sigma_s[1], sigma_a[2] + sigma_s[2]))
 
     plot_calculated_vs_expected(coeffs)
-    plt.show()
 
 def plot_calculated_vs_expected(coeffs):
     coeffs = np.array(coeffs)
@@ -60,13 +59,14 @@ def plot_calculated_vs_expected(coeffs):
     ax.scatter(x=coeffs[:,1,0], y=coeffs[:,0,0], s=0.5, c='tab:red', label='red channel')
     ax.scatter(x=coeffs[:,1,1], y=coeffs[:,0,1], s=0.5, c='tab:green', label='green channel')
     ax.scatter(x=coeffs[:,1,2], y=coeffs[:,0,2], s=0.5, c='tab:blue', label='blue channel')
-    ax.set_xlim(0,2.5)
-    ax.set_ylim(0,2.5)
+    ax.set_xlim(0,1)
+    ax.set_ylim(0,1)
     ax.set_aspect('equal', 'box')
     ax.legend()
     ax.set_title('attenuation coeffs')
     ax.set_xlabel('calculated')
     ax.set_ylabel('expected')
+    plt.savefig('calculated_vs_expected_attenuation_coeffs.png')
 
 def get_att_coeffs(img):
     t1_dist = T1_DIST
