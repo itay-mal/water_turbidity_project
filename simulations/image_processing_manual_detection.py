@@ -5,41 +5,39 @@ from itertools import product
 import os
 
 N_AIR = 1
-N_WATER = 1.33
+N_WATER = 1  # 1.33
 FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3
 num_targets = 2
+img_path = "./same_att_ceoff.exr"
+# img_path = "./attenuation_coeffs_sweep_no_ior/000.exr"
 # img_path = "./dataset_for_segmentation/87.png"
-img_path = "../../../attenuation_coeffs_sweep_hdrfilm/030.exr"
 # img_path = "./white_light_test.png"
 THICKNESS = 1
 
 
 def main():
-    os.environ["OPENCV_IO_ENABLE_OPENEXR"] ='1'
-    img = (cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*1000).astype(np.int)
-    # img_clean = (cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*1000).astype(np.int)
-    img_clean = cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)
-    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    # plt.show()
+    os.environ["OPENCV_IO_ENABLE_OPENEXR"] = '1'
+    img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+    img_clean = cv2.imread(img_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     cv2.namedWindow('BGR')
 
     def null(x):
         pass
 
-    cv2.createTrackbar("T1_X", "BGR", 0, img.shape[1], null)
-    cv2.createTrackbar("T1_Y", "BGR", 0, img.shape[0], null)
-    cv2.createTrackbar("T1_R", "BGR", 0, int(min(img.shape[:1]) / 2), null)
+    cv2.createTrackbar("T1_X", "BGR", 271, img.shape[1], null)
+    cv2.createTrackbar("T1_Y", "BGR", 250, img.shape[0], null)
+    cv2.createTrackbar("T1_R", "BGR", 104, int(min(img.shape[:1]) / 2), null)
     cv2.createTrackbar("T1_Theta", "BGR", 0, 180, null)
-    cv2.createTrackbar("T2_X", "BGR", 0, img.shape[1], null)
-    cv2.createTrackbar("T2_Y", "BGR", 0, img.shape[0], null)
-    cv2.createTrackbar("T2_R", "BGR", 0, int(min(img.shape[:1]) / 2), null)
+    cv2.createTrackbar("T2_X", "BGR", 426, img.shape[1], null)
+    cv2.createTrackbar("T2_Y", "BGR", 250, img.shape[0], null)
+    cv2.createTrackbar("T2_R", "BGR", 52, int(min(img.shape[:1]) / 2), null)
     cv2.createTrackbar("T2_Theta", "BGR", 0, 180, null)
 
     while True:
         # refresh image
-        img = cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*10
+        img = (cv2.imread(img_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH))**0.2
 
         # read trackbar values
         x1 = cv2.getTrackbarPos('T1_X', 'BGR')
@@ -117,23 +115,13 @@ def clac_attenuation_coeffs(t1_dist, t1_w, t1_b, t2_dist, t2_w, t2_b):
     t1_b_avg = np.average(t1_b, axis=0)
     t2_w_avg = np.average(t2_w, axis=0)
     t2_b_avg = np.average(t2_b, axis=0)
+    print("t1[B,G,R]:", t1_w_avg, "t2[B,G,R]:", t2_w_avg)
     att_B_w = - np.log(t1_w_avg[0]/t2_w_avg[0]) / (t1_dist - t2_dist)
     att_G_w = - np.log(t1_w_avg[1]/t2_w_avg[1]) / (t1_dist - t2_dist)
     att_R_w = - np.log(t1_w_avg[2]/t2_w_avg[2]) / (t1_dist - t2_dist)
-    # att_B_b = - np.log(t1_b_avg[0]/t2_b_avg[0]) / (t1_dist - t2_dist)
-    # att_G_b = - np.log(t1_b_avg[1]/t2_b_avg[1]) / (t1_dist - t2_dist)
-    # att_R_b = - np.log(t1_b_avg[2]/t2_b_avg[2]) / (t1_dist - t2_dist)
     print(f'attenuation blue on white: {att_B_w}')
-    # print(f'attenuation blue on black: {att_B_b}')
-    # print(f'attenuation blue average: {np.average([att_B_w,att_B_b])}')
     print(f'attenuation green on white: {att_G_w}')
-    # print(f'attenuation green on black: {att_G_b}')
-    # print(f'attenuation green average: {np.average([att_G_w,att_G_b])}')
     print(f'attenuation red on white: {att_R_w}')
-    # print(f'attenuation red on black: {att_R_b}')
-    # print(f'attenuation red average: {np.average([att_R_w,att_R_b])}')
-
-
 
 
 def unit_vector(vector):
