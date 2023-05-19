@@ -26,7 +26,8 @@ T2_DIST = 1.2
 T2_THETA = 0
 #############################
 
-images_root = "C:/Users/nitay/Desktop/attenuation_coeffs_sweep"
+images_root = "C:/Users/nitay/Desktop/attenuation_coeffs_sweep_hdrfilm"
+# images_root = "C:/Users/nitay/Desktop/attenuation_coeffs_sweep"
 img_path = "C:/Users/nitay/Desktop/000.png"
 # img_path = "./white_light_test.png"
 THICKNESS = 1

@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product
+import os
 
 N_AIR = 1
 N_WATER = 1.33
@@ -9,14 +10,19 @@ FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3
 num_targets = 2
-img_path = "./dataset_for_segmentation/87.png"
+# img_path = "./dataset_for_segmentation/87.png"
+img_path = "../../../attenuation_coeffs_sweep_hdrfilm/030.exr"
 # img_path = "./white_light_test.png"
 THICKNESS = 1
 
 
 def main():
-    img = cv2.imread(img_path)
-    img_clean = cv2.imread(img_path)
+    os.environ["OPENCV_IO_ENABLE_OPENEXR"] ='1'
+    img = (cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*1000).astype(np.int)
+    # img_clean = (cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*1000).astype(np.int)
+    img_clean = cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)
+    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    # plt.show()
     cv2.namedWindow('BGR')
 
     def null(x):
@@ -33,7 +39,7 @@ def main():
 
     while True:
         # refresh image
-        img = cv2.imread(img_path)
+        img = cv2.imread(img_path, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_UNCHANGED)*10
 
         # read trackbar values
         x1 = cv2.getTrackbarPos('T1_X', 'BGR')
