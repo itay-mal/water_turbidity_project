@@ -6,7 +6,7 @@ import os
 from tqdm import tqdm
 
 N_AIR = 1
-N_WATER = 1.33
+N_WATER = 1 #1.33
 FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3

@@ -1,0 +1,10 @@
+000:distance_1=0.6:distance_2=1.2:sigma_s=(0.0, 0.0, 0.0):sigma_a=(0.289, 0.064, 0.015):angle=0
+001:distance_1=0.6:distance_2=1.2:sigma_s=(0.05, 0.05, 0.05):sigma_a=(0.289, 0.064, 0.015):angle=0
+002:distance_1=0.6:distance_2=1.2:sigma_s=(0.1, 0.1, 0.1):sigma_a=(0.289, 0.064, 0.015):angle=0
+003:distance_1=0.6:distance_2=1.2:sigma_s=(0.15, 0.15, 0.15):sigma_a=(0.289, 0.064, 0.015):angle=0
+004:distance_1=0.6:distance_2=1.2:sigma_s=(0.2, 0.2, 0.2):sigma_a=(0.289, 0.064, 0.015):angle=0
+005:distance_1=0.6:distance_2=1.2:sigma_s=(0.25, 0.25, 0.25):sigma_a=(0.289, 0.064, 0.015):angle=0
+006:distance_1=0.6:distance_2=1.2:sigma_s=(0.3, 0.3, 0.3):sigma_a=(0.289, 0.064, 0.015):angle=0
+007:distance_1=0.6:distance_2=1.2:sigma_s=(0.35, 0.35, 0.35):sigma_a=(0.289, 0.064, 0.015):angle=0
+008:distance_1=0.6:distance_2=1.2:sigma_s=(0.4, 0.4, 0.4):sigma_a=(0.289, 0.064, 0.015):angle=0
+009:distance_1=0.6:distance_2=1.2:sigma_s=(0.45, 0.45, 0.45):sigma_a=(0.289, 0.064, 0.015):angle=0
