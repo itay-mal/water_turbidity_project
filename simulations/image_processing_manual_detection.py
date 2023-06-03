@@ -12,7 +12,7 @@ SENSOR_SIZE = 24e-3
 num_targets = 2
 # img_path = "./same_att_ceoff.exr"
 # img_path = "./attenuation_coeffs_sweep_no_ior/006.exr"
-img_path = "D:/Desktop/001.exr"
+img_path = "D:/Desktop/water turbidity project/water_turbidity_project/simulations/132.exr"
 # img_path = "./dataset_for_segmentation/87.png"
 # img_path = "./white_light_test.png"
 THICKNESS = 1
@@ -42,7 +42,7 @@ def main():
 
     while True:
         # refresh image
-        img = (cv2.imread(img_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH))**0.2
+        img = (cv2.imread(img_path, cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH))**0.4
 
         # read trackbar values
         x1 = cv2.getTrackbarPos('T1_X', 'controls')
