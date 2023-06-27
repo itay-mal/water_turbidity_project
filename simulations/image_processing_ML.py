@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 n_air = 1
-n_water = 1.33
+n_water = 1 #1.33
 focal = 20e-3
 target_r = 0.15
 sensor_size = 24e-3
@@ -16,7 +16,7 @@ num_targets = 2
 
 
 def main():
-    img = cv2.imread("./out/3.png")
+    img = cv2.imread("./attenuation_coeffs_sweep/000.png")
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     display_image(img_rgb, 'Original Image')
     circles = detect_circles(img_rgb)
@@ -38,11 +38,13 @@ def detect_circles(img_rgb):
     blu_chan = img_rgb[:, :, 2]
     display_image(blu_chan, 'blue')
     edges = canny(gray/255.)
-    display_image(edges, 'edges')
-    filled_targets = (255 * ndi.binary_fill_holes(edges).astype(np.uint8))
-    display_image(filled_targets, 'filled targets')
+    # filled_targets = (255 * ndi.binary_fill_holes(edges).astype(np.uint8))
+    # display_image(filled_targets, 'filled targets')
+    kernel = np.ones((3, 3), np.uint8)
+    edges_dialated = cv2.dilate(255*edges.astype(np.uint8), kernel, iterations=1)
+    display_image(edges_dialated, 'edges_dialated')
 
-    return cv2.HoughCircles(image=filled_targets, method=cv2.HOUGH_GRADIENT, dp=0.5, minDist=50, param2=5)
+    return cv2.HoughCircles(image=edges_dialated, method=cv2.HOUGH_GRADIENT, dp=0.5, minDist=50, param2=5)
 
 
 def display_image(img, title: str):
