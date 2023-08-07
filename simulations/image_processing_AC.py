@@ -77,7 +77,7 @@ class RANSAC:
                 self.best_model = model
                 self.d_min = d_temp
 
-path = "./attenuation_coeffs_sweep/020.png"
+path = "D:/Desktop/000.png"
 
 def main():
     img = io.imread(path)
@@ -128,6 +128,34 @@ def main():
     # ax.set_ylim([ 499, 0]) #inverse y axis between graph and image
     plt.show()
 
+def AC_detction(path):
+    img = io.imread(path)
+    img = rgb2gray(img)
+
+    s1 = np.linspace(0, 2 * np.pi, 400)
+    r1 = 250 + 200 * np.sin(s1)
+    c1 = 187 + 200 * np.cos(s1)
+    init_1 = np.array([r1, c1]).T
+
+    s2 = np.linspace(0, 2 * np.pi, 400)
+    r2 = 250 + 200 * np.sin(s2)
+    c2 = 557 + 200 * np.cos(s2)
+    init_2 = np.array([r2, c2]).T
+
+    snake1 = active_contour(gaussian(img, 3, preserve_range=False),
+                            init_1, alpha=0.001, beta=15, gamma=0.001)
+    snake2 = active_contour(gaussian(img, 3, preserve_range=False),
+                            init_2, alpha=0.001, beta=15, gamma=0.001)
+    return snake1, snake2, img.shape
+    # ransac1 = RANSAC(snake1[:, 1], snake1[:, 0], 50)
+    # ransac1.execute_ransac()
+    # a1, b1, r1 = ransac1.best_model[0], ransac1.best_model[1], ransac1.best_model[2]
+
+    # ransac2 = RANSAC(snake2[:, 1], snake2[:, 0], 50)
+    # ransac2.execute_ransac()
+    # a2, b2, r2 = ransac2.best_model[0], ransac2.best_model[1], ransac2.best_model[2]
+    #
+    # return a1, b1, r1, a2, b2, r2
 
 if __name__ == "__main__":
     main()
