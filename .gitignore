@@ -1,0 +1,7 @@
+# created by virtualenv automatically
+Lib/*
+Scripts/*
+share/*
+simulations/old/*
+simulations/renders/*
+token

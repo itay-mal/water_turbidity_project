@@ -5,6 +5,9 @@
     <default name="max_depth" value="-1"/>
     <default name="maxPasses" value="200"/>
     <default name="integrator" value="volpath"/>
+    <default name="light_r" value="120"/>
+    <default name="light_g" value="120"/>
+    <default name="light_b" value="120"/>
 
     <!--Integrator -->
 
@@ -54,7 +57,7 @@
         <sampler type="independent">
             <integer name="sampleCount" value="$spp"/>
         </sampler>
-        <film type="ldrfilm">
+        <film type="hdrfilm">
             <integer name="width"  value="750"/>
             <integer name="height" value="500"/>
             <rfilter type="tent"/>
@@ -62,7 +65,7 @@
             <string name="pixelFormat" value="rgb"/>
             <string name="componentFormat" value="float32"/>
         </film>
-<!--	<ref name="interior" id="underwater"/>-->
+	    <ref name="interior" id="underwater"/>
 <!--	<ref name="exterior" id="free_space"/>-->
     </sensor>
 
@@ -74,33 +77,47 @@
 
     <!-- Light -->
 
-    <shape type="sphere" id="light">
+
+<!--    <emitter type="sunsky"/>-->
+    <shape type="rectangle" id="light">
         <transform name="toWorld">
-            <scale value="3"/>
-            <translate x="0" y="50" z="0"/>
+            <scale value="15"/>
+             <rotate x="1" angle="90"/>
+            <translate x="0" y="10" z="0"/>
+
         </transform>
         <ref id="white"/>
         <emitter type="area">
-		<rgb name="radiance" value="180.387, 130.9873, 60.75357"/>
+
+		<rgb name="radiance" value="$light_r, $light_g, $light_b"/>
         </emitter>
     </shape>
 
 
     <!-- Shapes -->
 
-    <shape type="cube" id="water_medium">
-		<transform name="toWorld">
-			<scale x="10" y="5" z="2.8"/>
-			<!-- <scale x="1" y="1" z="1"/> -->
-			<translate x="0" y="0" z="3"/>
-			<!--    			<scale x="5" y="1" z="8"/>-->
+<!--    <shape type="cube" id="water_medium">-->
+<!--		<transform name="toWorld">-->
+<!--			<scale x="12" y="12" z="2.8"/>-->
+<!--			&lt;!&ndash; <scale x="1" y="1" z="1"/> &ndash;&gt;-->
+<!--			<translate x="0" y="0" z="3"/>-->
+<!--			&lt;!&ndash;    			<scale x="5" y="1" z="8"/>&ndash;&gt;-->
 
-			</transform>
-			<ref name="interior" id="underwater"/>
-<!--			<ref name="exterior" id="free_space"/>-->
-		<bsdf type="null">
-		</bsdf>
-	</shape>
+<!--			</transform>-->
+
+<!--&lt;!&ndash;			<ref name="interior" id="underwater"/>&ndash;&gt;-->
+<!--&lt;!&ndash;			<ref name="exterior" id="free_space"/>&ndash;&gt;-->
+<!--		<bsdf type="null">-->
+<!--		</bsdf>-->
+<!--        <medium type="homogeneous" name="interior">-->
+<!--            <rgb name="sigmaS" value="$sigma_sr, $sigma_sg, $sigma_sb"/>-->
+<!--	        <rgb name="sigmaA" value="$sigma_ar, $sigma_ag, $sigma_ab"/>-->
+<!--        </medium>-->
+<!--&lt;!&ndash;        <medium type="homogeneous" name="exterior">&ndash;&gt;-->
+<!--&lt;!&ndash;            <rgb name="sigmaS" value="0.001, 0.001, 0.001"/>&ndash;&gt;-->
+<!--&lt;!&ndash;	        <rgb name="sigmaA" value="0.001, 0.001, 0.001"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </medium>&ndash;&gt;-->
+<!--	</shape>-->
 
 <shape type="rectangle" id="water_ior">
 		<transform name="toWorld">
@@ -122,13 +139,13 @@
 	    <translate y="-1" />
         </transform>
         <bsdf type="roughplastic">
-            <rgb name="diffuseReflectance" value="0.4, 0.3, 0.2"/>
-            <float name="alpha" value="0.3"/>
+            <rgb name="diffuseReflectance" value="$floor_ref,$floor_ref,$floor_ref"/>
+            <float name="alpha" value="1"/>
         </bsdf>
     </shape>
 
     <shape type="disk" id="target_1">
-        <bsdf type="twoSided">
+<!--        <bsdf type="twoSided">-->
         	<bsdf type="diffuse">
 			<texture name="reflectance" type="checkerboard">
 				<spectrum name="color0" value="1"/>
@@ -136,9 +153,13 @@
 				<float name="vscale" value="2"/>
 				<float name="uscale" value="0"/>
 			</texture>
+
 		</bsdf>
-	</bsdf>
-	<transform name="toWorld">
+
+<!--	</bsdf>-->
+    	<transform name="toWorld">
+            <rotate x="0" y="1" z="0" angle="180"/>
+            <rotate x="0" y="0" z="1" angle="90"/>
             <scale value="0.15"/>
             <translate x="0.15" y="0" z="$target_1_dist"/>
             <rotate x="0" y="0" z="1" angle="$target_rotate_angle"/>
@@ -146,7 +167,7 @@
     </shape>
     
     <shape type="disk" id="target_2">
-        <bsdf type="twoSided">
+<!--        <bsdf type="twoSided">-->
         	<bsdf type="diffuse">
 			<texture name="reflectance" type="checkerboard">
 				<spectrum name="color0" value="1"/>
@@ -155,8 +176,11 @@
 				<float name="uscale" value="0"/>
 			</texture>
 		</bsdf>
-	</bsdf>
-	<transform name="toWorld">
+
+<!--	</bsdf>-->
+        <transform name="toWorld">
+            <rotate x="0" y="1" z="0" angle="180"/>
+            <rotate x="0" y="0" z="1" angle="90"/>
             <scale value="0.15"/>
             <translate x="-0.15" y="0" z="$target_2_dist"/>
             <rotate x="0" y="0" z="1" angle="$target_rotate_angle"/>

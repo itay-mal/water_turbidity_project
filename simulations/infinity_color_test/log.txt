@@ -1,0 +1,2 @@
+000:distance_1=0.6:distance_2=1.2:sigma_s=(0.3, 0, 0):sigma_a=(0.0, 0.0, 0.0):angle=0:light=(2, 2, 2):floor_ref=0
+001:distance_1=0.6:distance_2=1.2:sigma_s=(0.3, 0, 0):sigma_a=(0.3333333333333333, 0.3333333333333333, 0.3333333333333333):angle=0:light=(2, 2, 2):floor_ref=0
