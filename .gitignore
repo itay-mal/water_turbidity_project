@@ -4,5 +4,5 @@ simulations/Scripts/*
 simulations/share/*
 simulations/old/*
 simulations/renders/*
-simulations/.idea/*
+simulations/.idea
 token
