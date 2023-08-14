@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 from skimage import data, io
 from skimage.filters import gaussian
+from skimage.exposure import adjust_gamma
 from skimage.segmentation import active_contour
 import cv2
 import os
 from numpy.linalg import inv
+
+import concurrent.futures
+import time
 
 class RANSAC:
     def __init__(self, x_data, y_data, n):
@@ -77,20 +81,24 @@ class RANSAC:
                 self.best_model = model
                 self.d_min = d_temp
 
-path = "D:/Desktop/000.png"
+path = "C:/Users/nitay/Desktop/051.png"
 
 def main():
     img = io.imread(path)
     img = rgb2gray(img)
+    img = adjust_gamma(img, 0.3)
+
+    im_h, im_w = img.shape
+    rad = 0.25 * im_w
 
     s1 = np.linspace(0, 2 * np.pi, 400)
-    r1 = 250 + 200 * np.sin(s1)
-    c1 = 187 + 200 * np.cos(s1)
+    r1 = 0.5 * im_h + rad * np.sin(s1)
+    c1 = 0.25 * im_w + rad * np.cos(s1)
     init_1 = np.array([r1, c1]).T
 
     s2 = np.linspace(0, 2 * np.pi, 400)
-    r2 = 250 + 200 * np.sin(s2)
-    c2 = 557 + 200 * np.cos(s2)
+    r2 = 0.5 * im_h + rad * np.sin(s2)
+    c2 = 0.75 * im_w + rad * np.cos(s2)
     init_2 = np.array([r2, c2]).T
 
     snake1 = active_contour(gaussian(img, 3, preserve_range=False),
@@ -128,34 +136,30 @@ def main():
     # ax.set_ylim([ 499, 0]) #inverse y axis between graph and image
     plt.show()
 
-def AC_detction(path):
-    img = io.imread(path)
+def AC_detction(img):
     img = rgb2gray(img)
+    img = adjust_gamma(img, 0.5)
+    im_h, im_w = img.shape
+    rad = 0.25*im_w
 
     s1 = np.linspace(0, 2 * np.pi, 400)
-    r1 = 250 + 200 * np.sin(s1)
-    c1 = 187 + 200 * np.cos(s1)
+    r1 = 0.5  * im_h + rad * np.sin(s1)
+    c1 = 0.25 * im_w + rad * np.cos(s1)
     init_1 = np.array([r1, c1]).T
 
     s2 = np.linspace(0, 2 * np.pi, 400)
-    r2 = 250 + 200 * np.sin(s2)
-    c2 = 557 + 200 * np.cos(s2)
+    r2 = 0.5  * im_h + rad  * np.sin(s2)
+    c2 = 0.75 * im_w + rad * np.cos(s2)
     init_2 = np.array([r2, c2]).T
 
-    snake1 = active_contour(gaussian(img, 3, preserve_range=False),
-                            init_1, alpha=0.001, beta=15, gamma=0.001)
-    snake2 = active_contour(gaussian(img, 3, preserve_range=False),
-                            init_2, alpha=0.001, beta=15, gamma=0.001)
-    return snake1, snake2, img.shape
-    # ransac1 = RANSAC(snake1[:, 1], snake1[:, 0], 50)
-    # ransac1.execute_ransac()
-    # a1, b1, r1 = ransac1.best_model[0], ransac1.best_model[1], ransac1.best_model[2]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        img_gaus = gaussian(img, 3, preserve_range=False)
+        f1 = pool.submit(active_contour, img_gaus, init_1, alpha=0.0001, beta=20, gamma=0.0001)
+        f2 = pool.submit(active_contour, img_gaus, init_2, alpha=0.0001, beta=20, gamma=0.0001)
+        snake2 = f2.result()
+        snake1 = f1.result()
 
-    # ransac2 = RANSAC(snake2[:, 1], snake2[:, 0], 50)
-    # ransac2.execute_ransac()
-    # a2, b2, r2 = ransac2.best_model[0], ransac2.best_model[1], ransac2.best_model[2]
-    #
-    # return a1, b1, r1, a2, b2, r2
+    return snake1, snake2
 
 if __name__ == "__main__":
     main()
