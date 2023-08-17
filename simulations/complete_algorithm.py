@@ -51,15 +51,14 @@ def main():
     t1 = np.array(t1)
     t2 = np.array(t2)
 
-    d1 = calc_distance(img.shape[0], 0.5 * (np.max(t1[:, 0]) - np.min(t1[:, 0])))
-    d2 = calc_distance(img.shape[0], 0.5 * (np.max(t2[:, 0]) - np.min(t2[:, 0])))
+    center_t1, r1 = get_center_radius_from_snake(np.array(target_1), t1)
+    center_t2, r2 = get_center_radius_from_snake(np.array(target_2), t2)
 
-    center_t1 = np.mean(t1[:, :2], axis=0)
-    center_t2 = np.mean(t2[:, :2], axis=0)
-    max_r_t1 = np.max(np.linalg.norm(t1[:,:2] - center_t1, axis=1))
-    max_r_t2 = np.max(np.linalg.norm(t2[:,:2] - center_t2, axis=1))
-    t1 = t1[np.linalg.norm(t1[:,:2] - center_t1, axis=1) < 0.8*max_r_t1]
-    t2 = t2[np.linalg.norm(t2[:,:2] - center_t2, axis=1) < 0.8*max_r_t2]
+    t1 = t1[np.linalg.norm(t1[:,:2] - center_t1, axis=1) < 0.9*r1]
+    t2 = t2[np.linalg.norm(t2[:,:2] - center_t2, axis=1) < 0.9*r2]
+
+    d1 = calc_distance(img.shape[0], r1)
+    d2 = calc_distance(img.shape[0], r2)
 
     avg_t1 = np.mean(t1[:, 2])
     avg_t2 = np.mean(t2[:, 2])
@@ -113,6 +112,16 @@ def calc_distance(img_height, radius):
     focal_eff = FOCAL * (N_WATER / N_AIR)
     pix_d = SENSOR_SIZE / img_height
     return (focal_eff * TARGET_R) / (pix_d * radius)
+
+def get_center_radius_from_snake(snake,t):
+    """
+    calculate the radius and center of a AC detection in pixels.
+    expect snake to be np.array(n,2) and t are the pixels inside each target in format [n,(y,x,gray,r,g,b)].
+    """
+    c = np.mean(t[:,:2], axis=0)
+    r = np.mean(np.linalg.norm(np.array(snake) - c, axis=1))
+
+    return c, r
 
 if __name__ == "__main__":
     main()

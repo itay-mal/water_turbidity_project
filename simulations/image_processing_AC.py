@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 from skimage import data, io
-from skimage.filters import gaussian
-from skimage.exposure import adjust_gamma
+from skimage.filters import gaussian, median
+from skimage import exposure
 from skimage.segmentation import active_contour
 import cv2
 import os
@@ -138,7 +138,21 @@ def main():
 
 def AC_detction(img):
     img = rgb2gray(img)
-    img = adjust_gamma(img, 0.5)
+    # img = exposure.adjust_gamma(img, 0.5)
+    img = exposure.rescale_intensity(img)
+    img = median(img, np.ones((5, 5)))
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.imshow(img, cmap=plt.cm.gray)
+
+    img[img < 0.15] = 0
+    img[img > 0.8] = 1
+    img[((0.05 <= img)*(img <= 0.8))] = 0.5
+
+
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.imshow(img, cmap=plt.cm.gray)
+
     im_h, im_w = img.shape
     rad = 0.25*im_w
 
@@ -153,7 +167,7 @@ def AC_detction(img):
     init_2 = np.array([r2, c2]).T
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-        img_gaus = gaussian(img, 3, preserve_range=False)
+        img_gaus = gaussian(img, 5, preserve_range=False)
         f1 = pool.submit(active_contour, img_gaus, init_1, alpha=0.0001, beta=20, gamma=0.0001)
         f2 = pool.submit(active_contour, img_gaus, init_2, alpha=0.0001, beta=20, gamma=0.0001)
         snake2 = f2.result()
