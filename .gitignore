@@ -1,4 +1,3 @@
-# created by virtualenv automatically
 simulations/Lib/*
 simulations/Scripts/*
 simulations/share/*
@@ -6,3 +5,4 @@ simulations/old/*
 simulations/renders/*
 simulations/.idea
 token
+simulations/.vscode
