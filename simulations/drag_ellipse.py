@@ -22,34 +22,107 @@ class Point():
     def get_point(self):
         return (self._x, self._y)
 
-    def __add__(self, other):
+    def __add__(self, other, _name=None):
         x = self._x + other._x
-        y = self._x + other._y
-        return Point(x, y)
+        y = self._y + other._y
+        return Point(x, y, name=_name)
     
-    def __sub__(self, other):
+    def __sub__(self, other, _name=None):
         x = self._x - other._x
         y = self._y - other._y
-        return Point(x, y)
+        return Point(x, y, name=_name)
     
     def __repr__(self):
         return "Point {} {}".format(self.get_point(), self._name)
     
     def get_name(self):
         return self._name
-    
 
+class MyEllipse():
+    def __init__(self, x, y, w, h, color='b', name="MyEllipse"):
+        """
+        x,y - ellipse center coordinates [pixels]
+        w - width [pixels]
+        h - height [pixels]
+        """
+        self._center = Point(x,y, name='CENTER')
+        self._top    = Point(*(self._center + Point(0, int(h/2))).get_point(), name='TOP') 
+        self._right  = Point(*(self._center + Point(int(w/2), 0)).get_point(), name='RIGHT')
+        self._points = (self._center,
+                        self._right,
+                        self._top)
+
+        self._patch  = None 
+        self._anchors_scatter = None
+        self._color = color
+        self._name = name
+    
+    def __repr__(self):
+        return "{}".format(self._name)
+
+    def get_points(self):
+        return self._points    
+
+    def update_annotations(self, axes):
+        """
+        update all ellipse drawn elements
+        should be called after points are updated
+        axes - the subplot to be updated
+        """
+        if self._patch:
+            self._patch.remove()
+        if self._anchors_scatter:
+            self._anchors_scatter.remove()
+        
+        width  = 2 * ((self._right - self._center).get_point()[0])
+        height = 2 * ((self._top   - self._center).get_point()[1])
+        self._patch = Ellipse(xy=self._center.get_point(), width=width, height=height,
+                              edgecolor=self._color, fc='None', lw=2)
+        axes.add_patch(self._patch)
+        x_c, y_c = self._center.get_point()
+        x_r, y_r = self._right.get_point()
+        x_t, y_t = self._top.get_point()
+
+        # draw markers
+        self._anchors_scatter = axes.scatter((x_c,x_r,x_t),(y_c,y_r,y_t), marker='+', c='b', linewidths=5)
+        
+    def update_points(self, point, event):
+        """
+        updates the other ellipse points location according to dragged point
+        point - the dragged point
+        event - the motion event (mouse poisition)
+        """
+        if point.get_name() == 'CENTER':
+            # move all points by same amount
+            width, _ = (self._center - self._right).get_point()
+            _ , height = (self._top - self._center).get_point()
+            c_x, c_y = point.update_point(int(event.xdata), int(event.ydata))
+            self._right.update_point(c_x + abs(width), c_y)
+            self._top.update_point(c_x, c_y + height)
+        
+        elif point.get_name() == 'TOP':
+            # move only top point, restrict to y axis
+            x, _ = point.get_point()
+            point.update_point(x, event.ydata)
+        
+        elif point.get_name() == 'RIGHT':
+            # move only right point, restrict to x axis
+            _, y = point.get_point()
+            point.update_point(event.xdata, y)
+        
 class DraggablePlotExample(object):
     """ An example of plot with draggable markers """
 
     def __init__(self):
         self._figure, self._axes = None, None
         self._ellipse = None
-        self._ellipse_center, self._ellipse_top, self._ellipse_right = None, None, None
-        self._center_annotation, self._top_annotation, self._right_annotation = None, None, None
-        self._dragging_point = None
-        self._points = defaultdict(Point)
+        
+        self._dragging_point_target = None
 
+        self._targets = (MyEllipse(30, 50, 60, 40, 'r', "target1"),
+                         MyEllipse(70, 50, 60, 40, 'b', "target2"))
+        
+        
         self._init_plot()
 
     def _init_plot(self):
@@ -59,14 +132,6 @@ class DraggablePlotExample(object):
         axes.set_ylim(0, 100)
         axes.grid(which="both")
         self._axes = axes
-        self._ellipse_center = Point(*ELLIPSE_CENTER, name='CENTER')
-        self._ellipse_top    = Point(*(self._ellipse_center + Point(0,int(ELLIPSE_HEIGHT/2))).get_point(), name='TOP')
-        self._ellipse_right  = Point(*(self._ellipse_center + Point(int(ELLIPSE_WIDTH/2),0)).get_point(), name='RIGHT')
-
-        # add initial calculation of ellipse and its anchors
-        self._points = (self._ellipse_center,
-                        self._ellipse_top,
-                        self._ellipse_right)
         
         self._figure.canvas.mpl_connect('button_press_event', self._on_click)
         self._figure.canvas.mpl_connect('button_release_event', self._on_release)
@@ -75,28 +140,8 @@ class DraggablePlotExample(object):
         plt.show()
 
     def _update_plot(self):
-        # redraw ellipse
-        #TODO: REFACTOR THIS!!!
-        if self._ellipse:
-            self._ellipse.remove()
-        if self._center_annotation:
-            self._center_annotation.remove()
-        if self._top_annotation:
-            self._top_annotation.remove()
-        if self._right_annotation:
-            self._right_annotation.remove()
-        
-        width  = 2 * ((self._ellipse_right - self._ellipse_center).get_point()[0])
-        height = 2 * ((self._ellipse_top   - self._ellipse_center).get_point()[1])
-        self._ellipse = Ellipse(xy=self._ellipse_center.get_point(), width=width, height=height,
-                          edgecolor='r', fc='None', lw=2)
-        self._axes.add_patch(self._ellipse)
-        
-        # draw markers
-        self._center_annotation = self._axes.scatter(*self._ellipse_center.get_point(), marker='+', c='b', linewidths=5)
-        self._top_annotation    = self._axes.scatter(*self._ellipse_top.get_point(),    marker='+', c='b', linewidths=5)
-        self._right_annotation  = self._axes.scatter(*self._ellipse_right.get_point(),  marker='+', c='b', linewidths=5)
-        
+        for t in self._targets:
+            t.update_annotations(self._axes)        
         self._figure.canvas.draw()
 
     def _find_neighbor_point(self, event):
@@ -105,16 +150,18 @@ class DraggablePlotExample(object):
         :return: (x, y) if there are any point around mouse else None
         """
         distance_threshold = 3.0
-        nearest_point = None
+        nearest_point, nearest_target = None, None
         min_distance = math.sqrt(2 * (100 ** 2))
-        for p in self._points:
-            x, y = p.get_point()
-            distance = math.hypot(event.xdata - x, event.ydata - y)
-            if distance < min_distance:
-                min_distance = distance
-                nearest_point = p
+        for t in self._targets:
+            for p in t.get_points():
+                x, y = p.get_point()
+                distance = math.hypot(event.xdata - x, event.ydata - y)
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_point, nearest_target = p, t
+
         if min_distance < distance_threshold:
-            return nearest_point
+            return nearest_point, nearest_target
         return None
 
     def _on_click(self, event):
@@ -123,9 +170,9 @@ class DraggablePlotExample(object):
         """
         # left click
         if event.button == 1 and event.inaxes in [self._axes]:
-            point = self._find_neighbor_point(event)
+            point, target = self._find_neighbor_point(event)
             if point:
-                self._dragging_point = point
+                self._dragging_point_target = point, target
 
         # TODO: do we need right-click?
         # right click
@@ -139,36 +186,22 @@ class DraggablePlotExample(object):
         """ callback method for mouse release event
         :type event: MouseEvent
         """
-        if event.button == 1 and event.inaxes in [self._axes] and self._dragging_point:
-            self._dragging_point = None
+        if event.button == 1 and event.inaxes in [self._axes] and self._dragging_point_target:
+            self._dragging_point_target = None
             self._update_plot()
 
     def _on_motion(self, event):
         """ callback method for mouse motion event
         :type event: MouseEvent
         """
-        if not self._dragging_point:
+        if not self._dragging_point_target:
             return
         if event.xdata is None or event.ydata is None:
             return
-        if self._dragging_point.get_name() == 'CENTER':
-            # move all points by same amount
-            width, _ = (self._ellipse_center - self._ellipse_right).get_point()
-            _ , height = (self._ellipse_top - self._ellipse_center).get_point()
-            c_x, c_y = self._dragging_point.update_point(int(event.xdata), int(event.ydata))
-            self._ellipse_right.update_point(c_x + abs(width), c_y)
-            self._ellipse_top.update_point(c_x, c_y + height)
         
-        elif self._dragging_point.get_name() == 'TOP':
-            # move only top point, restrict to y axis
-            x, _ = self._dragging_point.get_point()
-            self._dragging_point.update_point(x, event.ydata)
-        
-        elif self._dragging_point.get_name() == 'RIGHT':
-            # move only right point, restrict to x axis
-            _, y = self._dragging_point.get_point()
-            self._dragging_point.update_point(event.xdata, y)  
-        
+        drag_point, drag_ellipse = self._dragging_point_target
+        drag_ellipse.update_points(drag_point, event)
+
         self._update_plot()
 
 

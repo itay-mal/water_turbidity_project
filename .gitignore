@@ -6,3 +6,4 @@ simulations/renders/*
 simulations/.idea
 token
 simulations/.vscode
+simulations/__pycache__
