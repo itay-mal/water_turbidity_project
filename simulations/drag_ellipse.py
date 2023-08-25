@@ -2,11 +2,8 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib.backend_bases import MouseEvent
-from collections import defaultdict
+from skimage import io
 
-ELLIPSE_CENTER = (50,50)
-ELLIPSE_HEIGHT = 60
-ELLIPSE_WIDTH = 80
 
 class Point():
     def __init__(self, x, y, name="MyPoint"):
@@ -57,6 +54,14 @@ class MyEllipse():
         self._color = color
         self._name = name
     
+    def get_params(self):
+        x_center, y_center = self._center.get_point()
+        _, y_top = self._top.get_point()
+        x_right, _ = self._right.get_point()
+        width = 2 * abs(x_right - x_center)
+        height = 2 * abs(y_top - y_center)
+        return x_center, y_center, width, height
+    
     def __repr__(self):
         return "{}".format(self._name)
 
@@ -88,7 +93,7 @@ class MyEllipse():
         
     def update_points(self, point, event):
         """
-        updates the other ellipse points location according to dragged point
+        updates the ellipse points location according to dragged point
         point - the dragged point
         event - the motion event (mouse poisition)
         """
@@ -103,39 +108,53 @@ class MyEllipse():
         elif point.get_name() == 'TOP':
             # move only top point, restrict to y axis
             x, _ = point.get_point()
-            point.update_point(x, event.ydata)
+            point.update_point(x, int(event.ydata))
         
         elif point.get_name() == 'RIGHT':
             # move only right point, restrict to x axis
             _, y = point.get_point()
-            point.update_point(event.xdata, y)
+            point.update_point(int(event.xdata), y)
         
 class DraggablePlotExample(object):
     """ An example of plot with draggable markers """
 
-    def __init__(self):
+    def __init__(self, 
+                 image=None, 
+                 target1_est=(30,50,60,40),
+                 target2_est=(70,50,60,40),
+                 my_callback=None):
+        """
+        image - will be displayed on background
+        target1/2_est - estimated ellipse params in format (x_enter, y_center, width, height) [pixels]
+        my_callback - function pointer, will be called with args: ((x1,y1,w1,h1),(x2,y2,w2,h2)) when 'c' pressed
+        """
         self._figure, self._axes = None, None
         self._ellipse = None
         
         self._dragging_point_target = None
 
-        self._targets = (MyEllipse(30, 50, 60, 40, 'r', "target1"),
-                         MyEllipse(70, 50, 60, 40, 'b', "target2"))
+        self._targets = (MyEllipse(*target1_est, 'r', "target1"),
+                         MyEllipse(*target2_est, 'b', "target2"))
         
-        
+        self._my_callback = my_callback
+        self.image = image
+
         self._init_plot()
 
     def _init_plot(self):
         self._figure = plt.figure("Example plot")
         axes = plt.subplot(1, 1, 1)
-        axes.set_xlim(0, 100)
-        axes.set_ylim(0, 100)
-        axes.grid(which="both")
+        if self.image is None:
+            axes.set_xlim(0, 100)
+            axes.set_ylim(0, 100)
+            axes.grid(which="both")
         self._axes = axes
-        
+        if self.image is not None:
+            self._axes.imshow(self.image)
         self._figure.canvas.mpl_connect('button_press_event', self._on_click)
         self._figure.canvas.mpl_connect('button_release_event', self._on_release)
         self._figure.canvas.mpl_connect('motion_notify_event', self._on_motion)
+        self._figure.canvas.mpl_connect('key_press_event', self._on_key_press)
         self._update_plot()
         plt.show()
 
@@ -145,11 +164,12 @@ class DraggablePlotExample(object):
         self._figure.canvas.draw()
 
     def _find_neighbor_point(self, event):
-        """ Find point around mouse position
+        """ 
+        Find point around mouse position
         :rtype: ((int, int)|None)
-        :return: (x, y) if there are any point around mouse else None
+        :return: (x, y), target if there are any point around mouse else None, None
         """
-        distance_threshold = 3.0
+        distance_threshold = 10
         nearest_point, nearest_target = None, None
         min_distance = math.sqrt(2 * (100 ** 2))
         for t in self._targets:
@@ -162,10 +182,11 @@ class DraggablePlotExample(object):
 
         if min_distance < distance_threshold:
             return nearest_point, nearest_target
-        return None
+        return None, None
 
     def _on_click(self, event):
-        """ callback method for mouse click event
+        """ 
+        callback method for mouse click event
         :type event: MouseEvent
         """
         # left click
@@ -183,7 +204,8 @@ class DraggablePlotExample(object):
         #         self._update_plot()
 
     def _on_release(self, event):
-        """ callback method for mouse release event
+        """ 
+        callback method for mouse release event
         :type event: MouseEvent
         """
         if event.button == 1 and event.inaxes in [self._axes] and self._dragging_point_target:
@@ -191,7 +213,8 @@ class DraggablePlotExample(object):
             self._update_plot()
 
     def _on_motion(self, event):
-        """ callback method for mouse motion event
+        """ 
+        callback method for mouse motion event
         :type event: MouseEvent
         """
         if not self._dragging_point_target:
@@ -204,6 +227,17 @@ class DraggablePlotExample(object):
 
         self._update_plot()
 
+    def _on_key_press(self, event):
+        if event.key == 'c':
+            if self._my_callback:
+                x1, y1, w1, h1 = self._targets[0].get_params()
+                x2, y2, w2, h2 = self._targets[1].get_params()
+                self._my_callback((x1, y1, w1, h1),(x2, y2, w2, h2))
+            else:
+                print("\'c\' is pressed but no callback defined")
 
 if __name__ == "__main__":
-    plot = DraggablePlotExample()
+    # TODO: remove this and implement as part of the complete algorithm
+    img = io.imread('C:/Users/itaym/Desktop/000.png')  
+    
+    plot = DraggablePlotExample(my_callback=print, image=img)
