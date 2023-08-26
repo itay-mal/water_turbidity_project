@@ -36,15 +36,15 @@ class Point():
         return self._name
 
 class MyEllipse():
-    def __init__(self, x, y, w, h, color='b', name="MyEllipse"):
+    def __init__(self, x, y, w, h, theta=0, color='b', name="MyEllipse"):
         """
         x,y - ellipse center coordinates [pixels]
         w - width [pixels]
         h - height [pixels]
         """
         self._center = Point(x,y, name='CENTER')
-        self._top    = Point(*(self._center + Point(0, int(h/2))).get_point(), name='TOP') 
-        self._right  = Point(*(self._center + Point(int(w/2), 0)).get_point(), name='RIGHT')
+        self._top    = Point(*(self._center - Point(0, int(h))).get_point(), name='TOP')  # subtract because in images y axis is upside down 
+        self._right  = Point(*(self._center + Point(int(w), 0)).get_point(), name='RIGHT')
         self._points = (self._center,
                         self._right,
                         self._top)
@@ -115,18 +115,19 @@ class MyEllipse():
             _, y = point.get_point()
             point.update_point(int(event.xdata), y)
         
-class DraggablePlotExample(object):
-    """ An example of plot with draggable markers """
+class DraggablePlot(object):
+    """plot with draggable markers"""
 
     def __init__(self, 
                  image=None, 
-                 target1_est=(30,50,60,40),
-                 target2_est=(70,50,60,40),
+                 target1_est=(30,50,60,40,0),
+                 target2_est=(70,50,60,40,0),
                  my_callback=None):
         """
         image - will be displayed on background
         target1/2_est - estimated ellipse params in format (x_enter, y_center, width, height) [pixels]
-        my_callback - function pointer, will be called with args: ((x1,y1,w1,h1),(x2,y2,w2,h2)) when 'c' pressed
+        my_callback - function pointer, will be called with args: (((x1,y1),w1,h1,0),((x2,y2),w2,h2,0),img) when 'c' pressed 
+                      0 is currently hard coded as angle # TODO: do we want to keep it that way?
         """
         self._figure, self._axes = None, None
         self._ellipse = None
@@ -156,6 +157,7 @@ class DraggablePlotExample(object):
         self._figure.canvas.mpl_connect('motion_notify_event', self._on_motion)
         self._figure.canvas.mpl_connect('key_press_event', self._on_key_press)
         self._update_plot()
+        self._axes.set_title("correct targets and press \'c\'")
         plt.show()
 
     def _update_plot(self):
@@ -232,7 +234,7 @@ class DraggablePlotExample(object):
             if self._my_callback:
                 x1, y1, w1, h1 = self._targets[0].get_params()
                 x2, y2, w2, h2 = self._targets[1].get_params()
-                self._my_callback((x1, y1, w1, h1),(x2, y2, w2, h2))
+                self._my_callback(((x1, y1), w1, h1, 0), ((x2, y2), w2, h2, 0), self.image)
             else:
                 print("\'c\' is pressed but no callback defined")
 
@@ -240,4 +242,4 @@ if __name__ == "__main__":
     # TODO: remove this and implement as part of the complete algorithm
     img = io.imread('C:/Users/itaym/Desktop/000.png')  
     
-    plot = DraggablePlotExample(my_callback=print, image=img)
+    plot = DraggablePlot(my_callback=print, image=img)
