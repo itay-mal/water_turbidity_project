@@ -1,14 +1,27 @@
-from image_processing_AC import AC_detction
+import sys
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.path as mplPath
 from matplotlib.patches import Ellipse
-from matplotlib.transforms import Bbox
 from skimage import io
 from skimage.color import rgb2gray
+
+# custom calsses with class 😎
+from image_processing_AC import AC_detction
 from myEllipseRansac import myEllipseRansac
 from drag_ellipse import DraggablePlot
-import easygui
+
+# GUI stuff
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog as fd
+
+matplotlib.use('TkAgg')
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg,
+    NavigationToolbar2Tk
+)
+from matplotlib.figure import Figure
 
 from tqdm import tqdm
 import time
@@ -21,6 +34,83 @@ TARGET_R = 0.15
 SENSOR_SIZE = 24e-3 # for 35mm sensor: 24X36mm
 
 path = 'C:/Users/itaym/Desktop/000.png' #"C:/Users/nitay/Desktop/0000.png"
+
+def my_click(event):
+    print(event)
+
+class WaterTurbidityApp(tk.Tk):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title('Water Turbidity App')
+        self.buttonsFrame = tk.Frame(height=50)
+        self.buttonsFrame.pack(side='top')
+        self.imageFrame = None
+        open_button = ttk.Button(self.buttonsFrame, text="Open image",
+                                 command=self.select_image).pack(side='left')
+        exit_button = ttk.Button(self.buttonsFrame, text="EXIT",
+                                 command=self.quit).pack(side='right')
+
+    def autodetect_targets(self):
+        snake1, snake2 = AC_detction(self.image)
+        target_1 = myEllipseRansac(snake1).get_params()
+        target_2 = myEllipseRansac(snake2).get_params()
+        self.imageFrame.destroy()
+        self.imageFrame = tk.Frame()
+        self.imageFrame.pack(side='top')    
+        figure = Figure(figsize=(6,4), dpi=100)
+        canvas = FigureCanvasTkAgg(figure, self.imageFrame)
+        self.drag_plot = DraggablePlot(self.image, 
+                             target_1, target_2, 
+                             my_callback=calc_coeffs_from_ellipses, 
+                             standalone=False)
+        self.drag_plot._init_plot(figure=figure, canvas=canvas)
+        canvas.callbacks.connect('button_press_event', self.drag_plot._on_click)
+        canvas.callbacks.connect('button_release_event', self.drag_plot._on_release)
+        canvas.callbacks.connect('motion_notify_event', self.drag_plot._on_motion)
+        canvas.callbacks.connect('key_press_event', self.drag_plot._on_key_press)
+        
+        axes = self.drag_plot.get_axes()
+        canvas.get_tk_widget().pack(side='top')
+        NavigationToolbar2Tk(canvas, self.imageFrame)
+        print('back to TK')
+        print(self.drag_plot.get_coeffs())
+        
+
+    def quit(self):
+        sys.exit(0)
+    
+    def open_image(self, path):
+        if self.imageFrame is None:
+            # to make sure we crearte it only once
+            run_button = ttk.Button(self.buttonsFrame, text="Run Autodetection",
+                        command=self.autodetect_targets).pack(side='left')
+        else:
+            # easier to destroy and recreate than refresh...
+            self.imageFrame.destroy()
+        self.imageFrame = tk.Frame()
+        self.imageFrame.pack(side='top')    
+        figure = Figure(figsize=(6,4), dpi=100)
+        canvas = FigureCanvasTkAgg(figure, self.imageFrame)
+        axes = figure.add_subplot()
+        self.image = io.imread(path)
+        axes.imshow(self.image)
+        canvas.get_tk_widget().pack(side='top')
+        NavigationToolbar2Tk(canvas, self.imageFrame)
+
+    def select_image(self):
+        filetypes = (
+            ('png images', '*.png'),
+            ('All files', '*.*')
+            )
+        path = fd.askopenfilename(filetypes=filetypes)
+        try:
+            self.open_image(path)
+        except Exception as e:
+            print(e)    
+
+    def run_app(self):
+        tk.mainloop()
+
 
 def main():
     print('start: {}'.format(time.time()))
@@ -42,7 +132,7 @@ def main():
                   my_callback=calc_coeffs_from_ellipses
                   )
     
-def calc_coeffs_from_ellipses(target1, target2, img):
+def calc_coeffs_from_ellipses(target1, target2, img, show_mask=True):
     """
     calculate the attenuation coeffs given the marked targets
     called as callback from DraggablePlot, 
@@ -118,14 +208,14 @@ def calc_coeffs_from_ellipses(target1, target2, img):
     att_R_w, att_G_w, att_B_w = clac_attenuation_coeffs(d1, avg_t1_w, avg_t1_b, d2, avg_t2_w, avg_t2_b)
 
     print(att_R_w, att_G_w, att_B_w, d1, d2)
-    easygui.msgbox(f"Attenuation Coeffs:\n"
-                   f"R: {att_R_w}\tG: {att_G_w}\tB: {att_B_w}"
-                   f"\n\nDists:\nTarget1: {d1}\tTarget2: {d2}", 
-                   title="Results")
 
-    fig, ax = plt.subplots(figsize=(7, 7))
-    ax.imshow(mask_3)
-    plt.show()
+    if show_mask:
+        fig, ax = plt.subplots(figsize=(7, 7))
+        ax.imshow(mask_3)
+        plt.show()
+    else: # probably called from TkInter
+        return att_R_w, att_G_w, att_B_w, d1, d2
+    
 
 def clac_attenuation_coeffs(t1_dist, t1_w_avg, t1_b_avg, t2_dist, t2_w_avg, t2_b_avg):
     """
@@ -160,4 +250,6 @@ def get_center_radius_from_snake(snake,t):
     return c, r
 
 if __name__ == "__main__":
-    main()
+    app = WaterTurbidityApp()
+    app.run_app()
+    # main()

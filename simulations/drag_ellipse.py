@@ -1,5 +1,6 @@
 import math
 import matplotlib.pyplot as plt
+import matplotlib
 from matplotlib.patches import Ellipse
 from matplotlib.backend_bases import MouseEvent
 from skimage import io
@@ -122,16 +123,18 @@ class DraggablePlot(object):
                  image=None, 
                  target1_est=(30,50,60,40,0),
                  target2_est=(70,50,60,40,0),
-                 my_callback=None):
+                 my_callback=None,
+                 standalone = True):
         """
         image - will be displayed on background
         target1/2_est - estimated ellipse params in format (x_enter, y_center, width, height) [pixels]
         my_callback - function pointer, will be called with args: (((x1,y1),w1,h1,0),((x2,y2),w2,h2,0),img) when 'c' pressed 
                       0 is currently hard coded as angle # TODO: do we want to keep it that way?
+        standalone - running in standalone mode (false -> running from TkInter)
         """
         self._figure, self._axes = None, None
         self._ellipse = None
-        
+        self.standalone = standalone
         self._dragging_point_target = None
 
         self._targets = (MyEllipse(*target1_est, 'r', "target1"),
@@ -139,12 +142,24 @@ class DraggablePlot(object):
         
         self._my_callback = my_callback
         self.image = image
+        self.coeffs = None
 
-        self._init_plot()
-
-    def _init_plot(self):
-        self._figure = plt.figure("Example plot")
-        axes = plt.subplot(1, 1, 1)
+    def get_axes(self):
+        try:
+            return self._axes
+        except:
+            print("axes not yet exist, run _init_plot first")
+        
+    
+    def get_coeffs(self):
+        if self.coeffs:
+            return self.coeffs
+        else:
+            print("coeffs not yet exist, run calculation first")
+        
+    def _init_plot(self, figure=None, canvas=None):
+        self._figure = plt.figure("Example plot") if figure is None else figure
+        axes = plt.subplot(1, 1, 1) if figure is None else figure.add_subplot()
         if self.image is None:
             axes.set_xlim(0, 100)
             axes.set_ylim(0, 100)
@@ -152,18 +167,21 @@ class DraggablePlot(object):
         self._axes = axes
         if self.image is not None:
             self._axes.imshow(self.image)
-        self._figure.canvas.mpl_connect('button_press_event', self._on_click)
-        self._figure.canvas.mpl_connect('button_release_event', self._on_release)
-        self._figure.canvas.mpl_connect('motion_notify_event', self._on_motion)
-        self._figure.canvas.mpl_connect('key_press_event', self._on_key_press)
+        self.myCanvas = self._figure.canvas if canvas is None else canvas 
+        if self.standalone:
+            self.myCanvas.mpl_connect('button_press_event', self._on_click)
+            self.myCanvas.mpl_connect('button_release_event', self._on_release)
+            self.myCanvas.mpl_connect('motion_notify_event', self._on_motion)
+            self.myCanvas.mpl_connect('key_press_event', self._on_key_press)
         self._update_plot()
         self._axes.set_title("correct targets and press \'c\'")
-        plt.show()
+        if self.standalone:
+            plt.show()
 
     def _update_plot(self):
         for t in self._targets:
             t.update_annotations(self._axes)        
-        self._figure.canvas.draw()
+        self.myCanvas.draw()
 
     def _find_neighbor_point(self, event):
         """ 
@@ -234,7 +252,7 @@ class DraggablePlot(object):
             if self._my_callback:
                 x1, y1, w1, h1 = self._targets[0].get_params()
                 x2, y2, w2, h2 = self._targets[1].get_params()
-                self._my_callback(((x1, y1), w1, h1, 0), ((x2, y2), w2, h2, 0), self.image)
+                self.coeffs = self._my_callback(((x1, y1), w1, h1, 0), ((x2, y2), w2, h2, 0), self.image, show_mask=self.standalone)
             else:
                 print("\'c\' is pressed but no callback defined")
 
@@ -242,4 +260,4 @@ if __name__ == "__main__":
     # TODO: remove this and implement as part of the complete algorithm
     img = io.imread('C:/Users/itaym/Desktop/000.png')  
     
-    plot = DraggablePlot(my_callback=print, image=img)
+    plot = DraggablePlot(my_callback=print, image=img)._init_plot()
