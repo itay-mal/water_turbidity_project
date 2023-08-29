@@ -6,7 +6,7 @@ class myEllipseRansac:
     """
     Ransac based model to estimate ellipse from given set of points
     """
-    def __init__(self, xy_data, n=100):
+    def __init__(self, xy_data, n=400):
         """
         xy_data - coordinates of the points to evaluate np.array(N,2)
         n       - number of iterations
@@ -18,11 +18,11 @@ class myEllipseRansac:
         self.xy_data = xy_data
         self.num_points = xy_data.shape[0]
         self.n = n  # TODO: can we determine dynamically? i.e by len(x_data)
-        self.min_score = 99999 # initialize to arbitrary high value
+        self.min_score = 1e20 # initialize to arbitrary high value
         self.best_model = None
         self.execute_ransac()
-        assert self.best_model is not None, "couldn't find any model ☹️"
-        
+        assert self.best_model is not None, "couldn't find any model ☹"
+
     def get_params(self):
         return self.best_model.params
 
@@ -40,8 +40,12 @@ class myEllipseRansac:
 
     def eval_model(self, model): 
         # get model score
-        
-        return np.sum(np.abs(model.residuals(self.xy_data))) # rediculously unreadable
+        my_score = np.sum(np.abs(model.residuals(self.xy_data))) # rediculously unreadable
+        x ,y, width, height, angle = model.params
+        my_score *= (width/height if width > height else height/width) ** 20  # penalize for non-equal axes
+        if abs(angle>0.1): # penalize for angle
+            my_score *= 1000
+        return my_score
 
     def execute_ransac(self):
         # find best model

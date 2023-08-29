@@ -50,6 +50,8 @@ class MyEllipse():
                         self._right,
                         self._top)
 
+        self._theta = theta
+
         self._patch  = None 
         self._anchors_scatter = None
         self._color = color
@@ -167,16 +169,17 @@ class DraggablePlot(object):
         self._axes = axes
         if self.image is not None:
             self._axes.imshow(self.image)
-        self.myCanvas = self._figure.canvas if canvas is None else canvas 
-        if self.standalone:
-            self.myCanvas.mpl_connect('button_press_event', self._on_click)
-            self.myCanvas.mpl_connect('button_release_event', self._on_release)
-            self.myCanvas.mpl_connect('motion_notify_event', self._on_motion)
-            self.myCanvas.mpl_connect('key_press_event', self._on_key_press)
+        self.myCanvas = self._figure.canvas if canvas is None else canvas
+        self.myCanvas.mpl_connect('button_press_event', self._on_click)
+        self.myCanvas.mpl_connect('button_release_event', self._on_release)
+        self.myCanvas.mpl_connect('motion_notify_event', self._on_motion)
+        self.myCanvas.mpl_connect('key_press_event', self._on_key_press)
         self._update_plot()
-        self._axes.set_title("correct targets and press \'c\'")
         if self.standalone:
+            self._axes.set_title("correct targets and press \'c\'")
             plt.show()
+        else:
+            self._axes.set_title("correct targets and press \'Calculate\'")
 
     def _update_plot(self):
         for t in self._targets:
