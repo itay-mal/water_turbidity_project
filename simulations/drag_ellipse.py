@@ -44,8 +44,8 @@ class MyEllipse():
         h - height [pixels]
         """
         self._center = Point(x,y, name='CENTER')
-        self._top    = Point(*(self._center - Point(0, int(h))).get_point(), name='TOP')  # subtract because in images y axis is upside down 
-        self._right  = Point(*(self._center + Point(int(w), 0)).get_point(), name='RIGHT')
+        self._top    = Point(*(self._center - Point(0, h)).get_point(), name='TOP')  # subtract because in images y axis is upside down
+        self._right  = Point(*(self._center + Point(w, 0)).get_point(), name='RIGHT')
         self._points = (self._center,
                         self._right,
                         self._top)
@@ -104,19 +104,19 @@ class MyEllipse():
             # move all points by same amount
             width, _ = (self._center - self._right).get_point()
             _ , height = (self._top - self._center).get_point()
-            c_x, c_y = point.update_point(int(event.xdata), int(event.ydata))
+            c_x, c_y = point.update_point(event.xdata, event.ydata)
             self._right.update_point(c_x + abs(width), c_y)
             self._top.update_point(c_x, c_y + height)
         
         elif point.get_name() == 'TOP':
             # move only top point, restrict to y axis
             x, _ = point.get_point()
-            point.update_point(x, int(event.ydata))
+            point.update_point(x, event.ydata)
         
         elif point.get_name() == 'RIGHT':
             # move only right point, restrict to x axis
             _, y = point.get_point()
-            point.update_point(int(event.xdata), y)
+            point.update_point(event.xdata, y)
         
 class DraggablePlot(object):
     """plot with draggable markers"""

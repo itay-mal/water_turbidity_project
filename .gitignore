@@ -3,7 +3,8 @@ simulations/Scripts/*
 simulations/share/*
 simulations/old/*
 simulations/renders/*
-simulations/.idea
+simulations/.idea/*
 token
 simulations/.vscode
 simulations/__pycache__
+simulations/roadsign_2

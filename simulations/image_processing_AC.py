@@ -170,7 +170,7 @@ def AC_detction(img, show_intermediate_results = False):
 
     # shrink snakes with active contours algorithm
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-        img_gaus = gaussian(img, 5, preserve_range=False)
+        img_gaus = gaussian(img, 3, preserve_range=False)
         f1 = pool.submit(active_contour, img_gaus, init_1, alpha=0.0001, beta=20, gamma=0.0001)
         f2 = pool.submit(active_contour, img_gaus, init_2, alpha=0.0001, beta=20, gamma=0.0001)
         snake2 = f2.result()
