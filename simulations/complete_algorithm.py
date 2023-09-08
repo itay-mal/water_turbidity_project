@@ -250,7 +250,7 @@ class WaterTurbidityApp(tk.Tk):
         figure = Figure(figsize=(6, 4), dpi=100)
         canvas = FigureCanvasTkAgg(figure, self.imageFrame)
         axes = figure.add_subplot()
-        self.image_name = os.path.split(path)[-1]
+        self.image_name = path
         self.image = io.imread(path)
         axes.imshow(self.image)
         canvas.get_tk_widget().pack(side='top')
@@ -261,39 +261,21 @@ class WaterTurbidityApp(tk.Tk):
             ('png images', '*.png'),
             ('All files', '*.*')
         )
-        path = fd.askopenfilename(filetypes=filetypes)
+        paths = ''
+        while not paths:
+            paths = fd.askopenfilenames(filetypes=filetypes) # returns tuple of paths or empty string
+            if paths == '':
+                print(type(paths))
+                tk.messagebox.showwarning(title="No file selected", message="please select valid image file/files")
+        if len(paths) > 1:
+            tk.messagebox.showinfo(title="Bulk mode", message=f"you selected {len(paths)} image\nBulk mode activated")
         try:
-            self.open_image(path)
+            self.open_image(paths[0])
         except Exception as e:
             print(e)
 
     def run_app(self):
         tk.mainloop()
-
-
-def main():
-    print('start: {}'.format(time.time()))
-    img = io.imread(path)
-    img_gray = rgb2gray(img)
-    print('before AC detection: {}'.format(time.time()))
-    # get snakes 
-    snake_1, snake_2 = AC_detction(img, show_intermediate_results=True)
-    print('after AC detection: {}'.format(time.time()))
-
-    # get estimated ellipses from snakes
-    target_1 = myEllipseRansac(snake_1).get_params()
-    target_2 = myEllipseRansac(snake_2).get_params()
-
-    print(target_1, target_2)
-    # user correct estimated ellipses
-    DraggablePlot(image=img,
-                  target1_est=target_1,
-                  target2_est=target_2,
-                  my_callback=calc_coeffs_from_ellipses
-                  )._init_plot()
-
-    plt.show()
-
 
 def calc_coeffs_from_ellipses(target1, target2, img, show_mask=True):
     """
@@ -417,4 +399,3 @@ def get_center_radius_from_snake(snake, t):
 if __name__ == "__main__":
     app = WaterTurbidityApp()
     app.run_app()
-    # main()
