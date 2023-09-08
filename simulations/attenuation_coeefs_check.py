@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 
 N_AIR = 1
-N_WATER = 1.0
+N_WATER = 1.333
 FOCAL = 20e-3
 TARGET_R = 0.15
 SENSOR_SIZE = 24e-3  # for 35mm sensor: 24X36mm
@@ -29,10 +29,10 @@ T2_THETA = 0
 #############################
 
 
-images_root = "./renders/mega_run"
-output_graph = "./graphs/mega_run_calc_vs_exp.png"
-calcs_root = "./calc_vs_exp"
-calc_vs_exp_file = "mega_run_calc_vs_exp.txt"
+images_root = "./renders/with_ior_scatter_sweep"
+output_graph = "./graphs/with_ior.png"
+calcs_root = images_root # "./renders/water_as_volume_2/"
+calc_vs_exp_file = "calc_vs_exp.txt"
 
 THICKNESS = 1
 
@@ -41,13 +41,14 @@ def main():
     coeffs = []
     light_arr = []
     floor_ref = []
-
+    first_target_dist = []
     with open(os.path.join(images_root, "log.txt"), 'rt') as f:
         for line in tqdm(f.readlines()):
             idx, d1, d2, sigma_s, sigma_a, _, light, floor = line.split(':')
             idx = int(idx)
             d1 = eval(d1.split('=')[-1])
             d2 = eval(d2.split('=')[-1])
+            first_target_dist.append(d1)
             sigma_a = eval(sigma_a.split('=')[-1])
             sigma_s = eval(sigma_s.split('=')[-1])
             light = eval(light.split('=')[-1])
@@ -63,7 +64,7 @@ def main():
         for idx, (calc_coeffs, expected_coeffs) in enumerate(coeffs):
             f.write('{:04d}:calculated={}:expected={}\n'.format(idx, calc_coeffs, expected_coeffs))
 
-    plot_calculated_vs_expected_with_LR(coeffs)
+    plot_calculated_vs_distance(coeffs, first_target_dist)
 
 
 def show_img_calculated_vs_expected(img, expected, calc):
@@ -190,6 +191,23 @@ def plot_calculated_vs_expected_with_LR_for_3(coeffs):
         ax.set_ylabel('calculated attenuation [1/m]')
         ax.set_xlabel('expected attenuation [1/m]')
     fig.set_title(f'calculated VS expected attenuation coefficients ')
+    plt.savefig(output_graph)
+
+
+def plot_calculated_vs_distance(coeffs, first_target_dist):
+    coeffs = np.array(coeffs)
+    fig = plt.figure(figsize=(8, 5))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.scatter(x=first_target_dist, y=coeffs[:, 0, 0], s=0.5, c='tab:red', label='red channel')
+    ax.scatter(x=first_target_dist, y=coeffs[:, 0, 1], s=0.5, c='tab:green', label='green channel')
+    ax.scatter(x=first_target_dist, y=coeffs[:, 0, 2], s=0.5, c='tab:blue', label='blue channel')
+    ax.set_xlim(-0.01, 2.5)
+    ax.set_ylim(-0.01, 1)
+    ax.set_aspect('equal', 'box')
+    ax.legend()
+    ax.set_title('calculated attenuation coefficients VS distance to targets')
+    ax.set_ylabel('calculated attenuation [1/m]')
+    ax.set_xlabel('distance to near target [m]')
     plt.savefig(output_graph)
 
 
