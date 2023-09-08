@@ -136,23 +136,25 @@ def main():
     # ax.set_ylim([ 499, 0]) #inverse y axis between graph and image
     plt.show()
 
-def AC_detction(img):
+def AC_detction(img, show_intermediate_results = False):
     img = rgb2gray(img)
-    # img = exposure.adjust_gamma(img, 0.5)
-    img = exposure.rescale_intensity(img)
-    img = median(img, np.ones((5, 5)))
-    fig, ax = plt.subplots(figsize=(7, 7))
-    ax.imshow(img, cmap=plt.cm.gray)
+    
+    if show_intermediate_results:
+        # show input image in grayscale
+        fig, ax = plt.subplots(figsize=(7, 7))
+        ax.imshow(img, cmap=plt.cm.gray)
+        ax.set_title("Original Image in Grayscale")
 
-    img[img < 0.15] = 0
-    img[img > 0.8] = 1
-    img[((0.05 <= img)*(img <= 0.8))] = 0.5
+    # TODO: keep this thresholding?
+    # img[img < 0.15] = 0
+    # img[img > 0.8] = 1
+    # img[((0.05 <= img)*(img <= 0.8))] = 0.5
 
+    # if show_intermediate_results:
+    #     fig, ax = plt.subplots(figsize=(7, 7))
+    #     ax.imshow(img, cmap=plt.cm.gray)
 
-
-    fig, ax = plt.subplots(figsize=(7, 7))
-    ax.imshow(img, cmap=plt.cm.gray)
-
+    # initilazing snakes for active contours
     im_h, im_w = img.shape
     rad = 0.25*im_w
 
@@ -166,12 +168,29 @@ def AC_detction(img):
     c2 = 0.75 * im_w + rad * np.cos(s2)
     init_2 = np.array([r2, c2]).T
 
+    # shrink snakes with active contours algorithm
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-        img_gaus = gaussian(img, 5, preserve_range=False)
+        img_gaus = gaussian(img, 3, preserve_range=False)
         f1 = pool.submit(active_contour, img_gaus, init_1, alpha=0.0001, beta=20, gamma=0.0001)
         f2 = pool.submit(active_contour, img_gaus, init_2, alpha=0.0001, beta=20, gamma=0.0001)
         snake2 = f2.result()
         snake1 = f1.result()
+
+    # snakes are returned as list in format (y,x), change to np.array in (x,y)
+    snake1 = np.flip(np.array(snake1), axis=1)
+    snake2 = np.flip(np.array(snake2), axis=1)
+
+    if show_intermediate_results:
+        # show active contours results
+        fig, ax = plt.subplots(figsize=(7, 7))
+        ax.imshow(img, cmap=plt.cm.gray)
+        ax.plot(init_1[:, 1], init_1[:, 0], '--r', lw=3)
+        ax.plot(init_2[:, 1], init_2[:, 0], '--r', lw=3)
+        ax.plot(snake1[:, 0], snake1[:, 1], '-b', lw=3)
+        ax.plot(snake2[:, 0], snake2[:, 1], '-b', lw=3)
+        ax.set_xticks([]), ax.set_yticks([])
+        ax.axis([0, img.shape[1], img.shape[0], 0])
+        ax.set_title("Active-Contours results")
 
     return snake1, snake2
 
