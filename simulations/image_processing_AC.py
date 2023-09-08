@@ -5,9 +5,11 @@ from skimage import data, io
 from skimage.filters import gaussian, median
 from skimage import exposure
 from skimage.segmentation import active_contour
+from matplotlib.patches import Ellipse
 import cv2
 import os
 from numpy.linalg import inv
+from myEllipseRansac import myEllipseRansac
 
 import concurrent.futures
 import time
@@ -81,12 +83,12 @@ class RANSAC:
                 self.best_model = model
                 self.d_min = d_temp
 
-path = "C:/Users/nitay/Desktop/051.png"
+path = "C:/Users/itaym/Desktop/000.png"
 
 def main():
     img = io.imread(path)
     img = rgb2gray(img)
-    img = adjust_gamma(img, 0.3)
+    img = exposure.adjust_gamma(img, 0.3)
 
     im_h, im_w = img.shape
     rad = 0.25 * im_w
@@ -115,22 +117,17 @@ def main():
     ax.set_xticks([]), ax.set_yticks([])
     ax.axis([0, img.shape[1], img.shape[0], 0])
 
-
-    ransac1 = RANSAC(snake1[:, 1], snake1[:, 0], 50)
-    ransac1.execute_ransac()
-    a1, b1, r1 = ransac1.best_model[0], ransac1.best_model[1], ransac1.best_model[2]
-
-    ransac2 = RANSAC(snake2[:, 1], snake2[:, 0], 50)
-    ransac2.execute_ransac()
-    a2, b2, r2 = ransac2.best_model[0], ransac2.best_model[1], ransac2.best_model[2]
-
+    x1, y1, w1, h1, _ = myEllipseRansac(np.flip(np.array(snake1), axis=1)).get_params()
+    x2, y2, w2, h2, _ = myEllipseRansac(np.flip(np.array(snake2), axis=1)).get_params()
+    
     # show result
     fig, ax = plt.subplots(figsize=(7, 7))
     ax.imshow(img, cmap=plt.cm.gray)
-    circle1 = plt.Circle((a1, b1), radius=r1, color='r', fc='y', fill=False)
-    plt.gca().add_patch(circle1)
-    circle2 = plt.Circle((a2, b2), radius=r2, color='g', fc='y', fill=False)
-    plt.gca().add_patch(circle2)
+    ellipse1 = Ellipse(xy=(x1,y1), width=2*w1, height=2*h1, edgecolor='r', fc='None', lw=2) 
+    ellipse2 = Ellipse(xy=(x2,y2), width=2*w2, height=2*h2, edgecolor='g', fc='None', lw=2) 
+    
+    plt.gca().add_patch(ellipse1)
+    plt.gca().add_patch(ellipse2)
     ax.set_aspect('equal', 'box')
     # ax.set_xlim([ 0, 749])
     # ax.set_ylim([ 499, 0]) #inverse y axis between graph and image
@@ -138,6 +135,7 @@ def main():
 
 def AC_detction(img, show_intermediate_results = False):
     img = rgb2gray(img)
+    img = exposure.adjust_gamma(img, 0.3)
     
     if show_intermediate_results:
         # show input image in grayscale

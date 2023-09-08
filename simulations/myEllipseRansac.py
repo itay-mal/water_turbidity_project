@@ -43,7 +43,7 @@ class myEllipseRansac:
         my_score = np.sum(np.abs(model.residuals(self.xy_data))) # rediculously unreadable
         x ,y, width, height, angle = model.params
         my_score *= (width/height if width > height else height/width) ** 20  # penalize for non-equal axes
-        if abs(angle>0.1): # penalize for angle
+        if abs(angle)>0.1: # penalize for angle
             my_score *= 1000
         return my_score
 
