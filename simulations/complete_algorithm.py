@@ -47,33 +47,51 @@ class resultsDialog(tk.simpledialog.Dialog):
         dists_title_frame = tk.Frame(master=frame)
         dists_val_frame = tk.Frame(master=frame)
         coeffs_title_frame = tk.Frame(master=frame)
-        coeffs_val_frame = tk.Frame(master=frame)
+        coeffs_header_frame = tk.Frame(master=frame)
+        coeffs_val_frames = [tk.Frame(master=frame) for _ in self.meta_params]
 
         dists_title_frame.pack(side='top')
         dists_val_frame.pack(side='top')
         coeffs_title_frame.pack(side='top')
-        coeffs_val_frame.pack(side='top')
+        coeffs_header_frame.pack(side='top')
+        [f.pack(side='top') for f in coeffs_val_frames]
 
-        self.dists_title_label = tk.Label(dists_title_frame, width=25, text="Target Distances [m]:")
-        self.target_1_dist_label = tk.Label(dists_val_frame, width=25,
-                                            text="target 1: {:.2f}".format(self.meta_params['t1_dist']))
-        self.target_2_dist_label = tk.Label(dists_val_frame, width=25,
-                                            text="target 2: {:.2f}".format(self.meta_params['t2_dist']))
-        self.coeffs_title_label = tk.Label(coeffs_title_frame, text="calculated attenuation coefficients [1/m]:")
-        self.coeffs_val_r_label = tk.Label(coeffs_val_frame, width=25,
-                                           text="R: {:.3f}".format(self.meta_params['calc_coeff_r']))
-        self.coeffs_val_g_label = tk.Label(coeffs_val_frame, width=25,
-                                           text="G: {:.3f}".format(self.meta_params['calc_coeff_g']))
-        self.coeffs_val_b_label = tk.Label(coeffs_val_frame, width=25,
-                                           text="B: {:.3f}".format(self.meta_params['calc_coeff_b']))
-
-        self.dists_title_label.pack(side='top')
-        self.target_1_dist_label.pack(side='left')
-        self.target_2_dist_label.pack(side='left')
-        self.coeffs_title_label.pack(side='top')
-        self.coeffs_val_r_label.pack(side='left')
-        self.coeffs_val_g_label.pack(side='left')
-        self.coeffs_val_b_label.pack(side='left')
+        tk.Label(dists_title_frame, width=25, text="Target Distances [m]:").pack(side='top')
+        tk.Label(dists_val_frame, width=25, text="Target 1:").pack(side='left')
+        t1_d = tk.Entry(dists_val_frame, width=25)
+        t1_d.insert(0, "{:.2f}".format(self.meta_params[0]['t1_dist']))
+        t1_d.pack(side='left')
+        t1_d.config(state="readonly")
+        tk.Label(dists_val_frame, width=25, text="Target 2:").pack(side='left')
+        t2_d = tk.Entry(dists_val_frame, width=25)
+        t2_d.insert(0, "{:.2f}".format(self.meta_params[0]['t2_dist']))
+        t2_d.pack(side='left')
+        t2_d.config(state="readonly")
+        tk.Label(coeffs_title_frame, text="Calculated attenuation coefficients").pack(side='top')
+        tk.Label(coeffs_header_frame, width=25, text="Image Path").pack(side='left')
+        tk.Label(coeffs_header_frame, width=25, text="R [1/m]").pack(side='left')
+        tk.Label(coeffs_header_frame, width=25, text="G [1/m]").pack(side='left')
+        tk.Label(coeffs_header_frame, width=25, text="B [1/m]").pack(side='left')
+        for idx, f in enumerate(coeffs_val_frames):
+            name = tk.Entry(f, width=25)
+            name.insert(0, "{}".format(self.meta_params[idx]['name']))
+            name.pack(side='left')
+            name.config(state="readonly")
+            
+            r_coeff = tk.Entry(f, width=25)
+            r_coeff.insert(0, "{:.4f}".format(self.meta_params[idx]['calc_coeff_r']))
+            r_coeff.pack(side='left')
+            r_coeff.config(state="readonly")
+            
+            g_coeff = tk.Entry(f, width=25)
+            g_coeff.insert(0, "{:.4f}".format(self.meta_params[idx]['calc_coeff_g']))
+            g_coeff.pack(side='left')
+            g_coeff.config(state="readonly")
+            
+            b_coeff = tk.Entry(f, width=25)
+            b_coeff.insert(0, "{:.4f}".format(self.meta_params[idx]['calc_coeff_b']))
+            b_coeff.pack(side='left')
+            b_coeff.config(state="readonly")
 
         return frame
 
@@ -85,7 +103,7 @@ class resultsDialog(tk.simpledialog.Dialog):
             ('csv file', '*.csv'),
         )
         f = fd.asksaveasfilename(filetypes=filetypes)
-        df = pd.DataFrame(self.meta_params, index=[0])
+        df = pd.DataFrame(self.meta_params)
         df.to_csv(f, index=False)
 
     def save_run_existing_file(self):
@@ -94,7 +112,7 @@ class resultsDialog(tk.simpledialog.Dialog):
             ('All files', '*.*')
         )
         path = fd.askopenfilename(filetypes=filetypes)
-        df = pd.concat([pd.read_csv(path), pd.DataFrame(self.meta_params, index=[0])]).fillna('')
+        df = pd.concat([pd.read_csv(path), pd.DataFrame(self.meta_params)]).fillna('')
         df.to_csv(path, index=False)
 
     def buttonbox(self):
@@ -173,16 +191,23 @@ class WaterTurbidityApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title('Water Turbidity App')
+        self.iconphoto(False, tk.PhotoImage(file="technion_logo.png"))
+        
         self.buttonsFrame = tk.Frame(height=50)
         self.buttonsFrame.pack(side='top')
-        self.imageFrame = None
         open_button = ttk.Button(self.buttonsFrame, text="Open image",
                                  command=self.select_image).pack(side='left')
         exit_button = ttk.Button(self.buttonsFrame, text="EXIT",
                                  command=self.quit).pack(side='right')
         params_button = ttk.Button(self.buttonsFrame, text="Default Params",
                                    command=self.set_default_params).pack(side='right')
-
+        
+        self.imageFrame = None
+        
+        # GUI and target autodetection will only refer to first image while calculate
+        self.image = None   
+        self.image_paths = ''
+        
     def set_default_params(self):
         ParamsDialog(parent=self, title='Default_params')
 
@@ -204,40 +229,32 @@ class WaterTurbidityApp(tk.Tk):
         canvas.get_tk_widget().pack(side='top')
         NavigationToolbar2Tk(canvas, self.imageFrame)
         if not hasattr(self, 'calculate_button'):
-            self.calculate_button = ttk.Button(self.buttonsFrame, text="Calculate", command=self.calculate_coeffs).pack(
-                side='left')
+            self.calculate_button = ttk.Button(self.buttonsFrame, 
+                                               text="Calculate", 
+                                               command=self.calculate_coeffs).pack(side='left')
 
     def calculate_coeffs(self):
         x1, y1, w1, h1 = self.drag_plot._targets[0].get_params()
         x2, y2, w2, h2 = self.drag_plot._targets[1].get_params()
-        coeffs = calc_coeffs_from_ellipses(((x1, y1), w1, h1, 0), ((x2, y2), w2, h2, 0), self.image,
-                                           show_mask=False)
-        att_R_w, att_G_w, att_B_w, d1, d2 = coeffs
-        resultsDialog(self, 'results', {'name': self.image_name,
-                                        't1_dist': d1,
-                                        't2_dist': d2,
-                                        'calc_coeff_r': att_R_w,
-                                        'calc_coeff_g': att_G_w,
-                                        'calc_coeff_b': att_B_w,
-                                        't1_x': x1,
-                                        't1_y': y1,
-                                        't1_w': w1,
-                                        't1_h': h1,
-                                        't2_x': x2,
-                                        't2_y': y2,
-                                        't2_w': w2,
-                                        't2_h': h2,
-                                        "N_AIR": N_AIR,
-                                        "N_WATER": N_WATER,
-                                        "FOCAL": FOCAL,
-                                        "TARGET_R": TARGET_R,
-                                        "SENSOR_SIZE": SENSOR_SIZE
-                                        })
+        results_list = []
+        for p in self.image_paths:
+            img = io.imread(p)
+            att_R_w, att_G_w, att_B_w, d1, d2 = calc_coeffs_from_ellipses(((x1, y1), w1, h1, 0),
+                                                                          ((x2, y2), w2, h2, 0),
+                                                                          img, show_mask=False)
+            results_list.append({"name": p, "t1_dist": d1, "t2_dist": d2,
+                                 "calc_coeff_r": att_R_w, "calc_coeff_g": att_G_w, "calc_coeff_b": att_B_w,
+                                 "t1_x": x1, "t1_y": y1, "t1_w": w1, "t1_h": h1,
+                                 "t2_x": x2, "t2_y": y2, "t2_w": w2, "t2_h": h2,
+                                 "N_AIR": N_AIR, "N_WATER": N_WATER,
+                                 "FOCAL": FOCAL, "TARGET_R": TARGET_R, "SENSOR_SIZE": SENSOR_SIZE
+                                 })
+        resultsDialog(self, 'results', results_list)
 
     def quit(self):
         sys.exit(0)
 
-    def open_image(self, path):
+    def open_image(self, img):
         if self.imageFrame is None:
             # to make sure we crearte it only once
             run_button = ttk.Button(self.buttonsFrame, text="Run Autodetection",
@@ -250,9 +267,7 @@ class WaterTurbidityApp(tk.Tk):
         figure = Figure(figsize=(6, 4), dpi=100)
         canvas = FigureCanvasTkAgg(figure, self.imageFrame)
         axes = figure.add_subplot()
-        self.image_name = path
-        self.image = io.imread(path)
-        axes.imshow(self.image)
+        axes.imshow(img)
         canvas.get_tk_widget().pack(side='top')
         NavigationToolbar2Tk(canvas, self.imageFrame)
 
@@ -267,10 +282,12 @@ class WaterTurbidityApp(tk.Tk):
             if paths == '':
                 print(type(paths))
                 tk.messagebox.showwarning(title="No file selected", message="please select valid image file/files")
+        self.image_paths = paths
         if len(paths) > 1:
             tk.messagebox.showinfo(title="Bulk mode", message=f"you selected {len(paths)} image\nBulk mode activated")
         try:
-            self.open_image(paths[0])
+            self.image = io.imread(self.image_paths[0])
+            self.open_image(self.image)
         except Exception as e:
             print(e)
 
