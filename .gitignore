@@ -8,3 +8,6 @@ token
 simulations/.vscode
 simulations/__pycache__
 simulations/roadsign_2
+simulations/dist
+simulations/build
+simulations/complete_algorithm.spec
