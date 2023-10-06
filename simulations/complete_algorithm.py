@@ -191,7 +191,7 @@ class WaterTurbidityApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title('Water Turbidity App')
-        self.iconphoto(False, tk.PhotoImage(file="technion_logo.png"))
+        self.iconphoto(False, tk.PhotoImage(file="./simulations/technion_logo.png"))
         
         self.buttonsFrame = tk.Frame(height=50)
         self.buttonsFrame.pack(side='top')
