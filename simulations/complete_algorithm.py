@@ -127,6 +127,8 @@ class resultsDialog(tk.simpledialog.Dialog):
 class ParamsDialog(tk.simpledialog.Dialog):
     def __init__(self, parent, title):
         super().__init__(parent, title)
+        self.iconphoto(False, tk.PhotoImage(file="./simulations/technion_logo.png"))
+
 
     def body(self, frame):
         # print(type(frame)) # tkinter.Frame
@@ -172,7 +174,6 @@ class ParamsDialog(tk.simpledialog.Dialog):
         return frame
 
     def ok_pressed(self):
-        # print("ok")
         global N_AIR, N_WATER, FOCAL, TARGET_R, SENSOR_SIZE
         N_AIR = float(self.n_air_box.get())
         N_WATER = float(self.n_water_box.get())
@@ -191,8 +192,7 @@ class WaterTurbidityApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title('Water Turbidity App')
-        self.iconphoto(False, tk.PhotoImage(file="./simulations/technion_logo.png"))
-        
+        self.iconphoto(False, tk.PhotoImage(file=os.path.join(os.path.abspath(os.path.dirname(__file__)),"app_assets/technion_logo.png")))
         self.buttonsFrame = tk.Frame(height=50)
         self.buttonsFrame.pack(side='top')
         open_button = ttk.Button(self.buttonsFrame, text="Open image",
@@ -280,7 +280,6 @@ class WaterTurbidityApp(tk.Tk):
         while not paths:
             paths = fd.askopenfilenames(filetypes=filetypes) # returns tuple of paths or empty string
             if paths == '':
-                print(type(paths))
                 tk.messagebox.showwarning(title="No file selected", message="please select valid image file/files")
         self.image_paths = paths
         if len(paths) > 1:

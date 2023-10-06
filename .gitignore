@@ -3,11 +3,12 @@ simulations/Scripts/*
 simulations/share/*
 simulations/old/*
 simulations/renders/*
-simulations/.idea/*
+*/.idea/
+.idea/
 token
-simulations/.vscode
+*/.vscode/
+.vscode/
 simulations/__pycache__
 simulations/roadsign_2
 simulations/dist
 simulations/build
-simulations/complete_algorithm.spec
